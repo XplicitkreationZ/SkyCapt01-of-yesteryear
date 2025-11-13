@@ -72,7 +72,7 @@ function useProducts() {
 
 const Hero = () => (
   <section className="relative overflow-hidden" data-testid="hero">
-    <div className="absolute inset-0 opacity-20" style={{background:"radial-gradient(1200px 400px at 50% -10%, rgba(16,185,129,.45), transparent)"}}/>
+    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{background:"radial-gradient(1200px 400px at 50% -10%, rgba(16,185,129,.45), transparent)"}}/>
     <div className="max-w-6xl mx-auto px-4 py-14 grid md:grid-cols-[1.2fr_.8fr] gap-10 items-center">
       <div>
         <h1 className="font-[\'Space_Grotesk\'] text-5xl md:text-6xl font-extrabold leading-tight text-white" data-testid="hero-title">Premium THCA Flower</h1>
