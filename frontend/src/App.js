@@ -7,15 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { HERO_IMAGES } from "@/components/HeroImages";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const brand = {
-  green: "#33FF57",
-  purple: "#7E2CFB",
-  black: "#070707",
-};
+const brand = { green: "#33FF57", purple: "#7E2CFB", black: "#070707" };
 
 const DisclaimerText = () => (
   <div className="space-y-4 text-sm leading-relaxed" data-testid="legal-text">
@@ -99,18 +96,18 @@ function useProducts() {
 
 const Hero = () => (
   <section className="relative overflow-hidden" data-testid="hero">
-    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{background:"radial-gradient(1200px 400px at 50% -10%, rgba(16,185,129,.45), transparent)"}}/>
-    <div className="max-w-6xl mx-auto px-4 py-14 grid md:grid-cols-[1.2fr_.8fr] gap-10 items-center">
+    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{background:`url(${HERO_IMAGES.flowerMacro}) center/cover no-repeat`}}/>
+    <div className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-[1.2fr_.8fr] gap-10 items-center">
       <div>
-        <h1 className="font-['Space_Grotesk'] text-5xl md:text-6xl font-extrabold leading-tight text-white" data-testid="hero-title">No Quit, No Compromise,<br/>No running from the Fight</h1>
-        <p className="text-zinc-300 mt-4 max-w-xl">XplicitkreationZ Exotics · Premium THCA flower and prerolls crafted for true connoisseurs.</p>
+        <h1 className="font-['Space_Grotesk'] text-5xl md:text-6xl font-extrabold leading-tight text-white" data-testid="hero-title">XplicitkreationZ Exotics</h1>
+        <p className="text-zinc-300 mt-4 max-w-xl">Premium THCA flower and prerolls for true connoisseurs. Small-batch craft. Big terp energy.</p>
         <div className="mt-6 flex gap-3">
           <a href="#products" data-testid="shop-now-btn"><Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Shop now</Button></a>
           <Link to="/about" data-testid="learn-about-btn"><Button variant="secondary" className="rounded-full border-emerald-500/40 bg-transparent text-emerald-300 hover:bg-emerald-500/10">About us</Button></Link>
         </div>
       </div>
       <div className="justify-self-center">
-        <img alt="brand mark" className="h-60 w-60 md:h-72 md:w-72" src="https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/gj0h0vr4_XplicitkreationZ_20250626_162911_0000.png"/>
+        <img alt="prerolls" className="h-72 w-72 object-cover rounded-xl ring-2 ring-emerald-500/40" src={HERO_IMAGES.preroll2}/>
       </div>
     </div>
   </section>
@@ -124,6 +121,28 @@ const Catalog = ({ addToCart }) => {
     <section id="products" className="max-w-6xl mx-auto px-4 py-10" data-testid="catalog-grid">
       <h2 className="text-2xl text-white mb-6">Our Products</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Stock-feature tiles */}
+        <Card className="bg-zinc-950/70 border-emerald-500/30">
+          <CardHeader><CardTitle className="text-white">Prerolls</CardTitle></CardHeader>
+          <CardContent>
+            <img alt="prerolls" src={HERO_IMAGES.preroll1} className="h-40 w-full object-cover rounded-md mb-3"/>
+            <p className="text-zinc-300 text-sm">Smooth burn, bold terp profile.</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-zinc-950/70 border-emerald-500/30">
+          <CardHeader><CardTitle className="text-white">Flower Buds</CardTitle></CardHeader>
+          <CardContent>
+            <img alt="buds" src={HERO_IMAGES.budsPile} className="h-40 w-full object-cover rounded-md mb-3"/>
+            <p className="text-zinc-300 text-sm">Trichome-rich, hand selected.</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-zinc-950/70 border-emerald-500/30">
+          <CardHeader><CardTitle className="text-white">Jar Reserve</CardTitle></CardHeader>
+          <CardContent>
+            <img alt="jar" src={HERO_IMAGES.jarBuds} className="h-40 w-full object-cover rounded-md mb-3"/>
+            <p className="text-zinc-300 text-sm">Fresh-sealed, curated batches.</p>
+          </CardContent>
+        </Card>
         {items.map(p=> (
           <Card key={p.id} className="bg-zinc-950/70 border-emerald-500/30 hover:border-emerald-400/60 transition-colors" data-testid={`product-card-${p.id}`}>
             <CardHeader>
