@@ -145,36 +145,44 @@ async def create_order(items: List[CartItem], email: Optional[str] = None):
 
 # ----- Sample data helpers -----
 STOCK_IMAGES = [
-    "https://images.unsplash.com/photo-1589141986943-5578615fdef2",  # buds pile
-    "https://images.unsplash.com/photo-1617101814633-c8a6cfd159cc",  # plant alt
-    "https://images.unsplash.com/photo-1626106576760-d64336d3fa5b",  # macro flower
+    "https://images.unsplash.com/photo-1558010089-ff6fd29ea39a",  # clear bag with buds
+    "https://images.pexels.com/photos/7230269/pexels-photo-7230269.jpeg",  # professional packaging
+    "https://images.unsplash.com/photo-1589141986943-5578615fdef2",  # buds pile (fallback)
 ]
 
 async def _insert_samples():
     samples = [
         {
-            "name": "Purple Runtz THCA Flower",
-            "description": "Candy-sweet aroma, euphoric balanced high.",
-            "price": 34.99,
-            "strain_type": "Hybrid",
-            "size": "3.5g",
-            "image_url": STOCK_IMAGES[0],
-        },
-        {
-            "name": "Gelato 41 THCA Flower",
-            "description": "Creamy, calm and creative mood.",
-            "price": 39.99,
+            "name": "Blue Dream 3.5g Flower Bag",
+            "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.",
+            "price": 34.00,
             "strain_type": "Hybrid",
             "size": "3.5g",
             "image_url": STOCK_IMAGES[1],
         },
         {
-            "name": "OG Kush THCA Flower",
-            "description": "Classic pine-diesel terp profile, deep relaxation.",
-            "price": 29.99,
-            "strain_type": "Indica",
+            "name": "Sour Diesel 1g Gram Bag",
+            "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.",
+            "price": 12.00,
+            "strain_type": "Sativa",
+            "size": "1g",
+            "image_url": STOCK_IMAGES[0],
+        },
+        {
+            "name": "Pineapple Express 3.5g Flower Bag",
+            "description": "Tropical sweetness meets energetic vibes.",
+            "price": 32.00,
+            "strain_type": "Hybrid",
             "size": "3.5g",
             "image_url": STOCK_IMAGES[2],
+        },
+        {
+            "name": "Wedding Cake 1g Gram Bag",
+            "description": "Frosted vanilla gas in a compact single.",
+            "price": 13.00,
+            "strain_type": "Indica",
+            "size": "1g",
+            "image_url": STOCK_IMAGES[0],
         },
     ]
     docs = []
