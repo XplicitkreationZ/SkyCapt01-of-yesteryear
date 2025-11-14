@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { HERO_IMAGES } from "@/components/HeroImages";
+import { ProductLabel } from "@/components/ProductLabel";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -125,21 +126,30 @@ const Catalog = ({ addToCart }) => {
         <Card className="bg-zinc-950/70 border-emerald-500/30">
           <CardHeader><CardTitle className="text-white">Prerolls</CardTitle></CardHeader>
           <CardContent>
-            <img alt="prerolls" src={HERO_IMAGES.preroll1} className="h-40 w-full object-cover rounded-md mb-3"/>
+            <div className="relative">
+              <img alt="prerolls" src={HERO_IMAGES.preroll1} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <ProductLabel name="Prerolls" size="2g" />
+            </div>
             <p className="text-zinc-300 text-sm">Smooth burn, bold terp profile.</p>
           </CardContent>
         </Card>
         <Card className="bg-zinc-950/70 border-emerald-500/30">
           <CardHeader><CardTitle className="text-white">Flower Buds</CardTitle></CardHeader>
           <CardContent>
-            <img alt="buds" src={HERO_IMAGES.budsPile} className="h-40 w-full object-cover rounded-md mb-3"/>
+            <div className="relative">
+              <img alt="buds" src={HERO_IMAGES.budsPile} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <ProductLabel name="Craft Flower" size="3.5g" />
+            </div>
             <p className="text-zinc-300 text-sm">Trichome-rich, hand selected.</p>
           </CardContent>
         </Card>
         <Card className="bg-zinc-950/70 border-emerald-500/30">
           <CardHeader><CardTitle className="text-white">Jar Reserve</CardTitle></CardHeader>
           <CardContent>
-            <img alt="jar" src={HERO_IMAGES.jarBuds} className="h-40 w-full object-cover rounded-md mb-3"/>
+            <div className="relative">
+              <img alt="jar" src={HERO_IMAGES.jarBuds} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <ProductLabel name="Jar Reserve" size="7g" />
+            </div>
             <p className="text-zinc-300 text-sm">Fresh-sealed, curated batches.</p>
           </CardContent>
         </Card>
@@ -149,7 +159,10 @@ const Catalog = ({ addToCart }) => {
               <CardTitle className="text-white text-lg">{p.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <img alt={p.name} src={p.image_url} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <div className="relative">
+                <img alt={p.name} src={p.image_url} className="h-40 w-full object-cover rounded-md mb-3"/>
+                <ProductLabel name={p.name.split(" ")[0]} size={p.size} />
+              </div>
               <p className="text-emerald-300 text-sm">{p.strain_type} · {p.size}</p>
               <p className="text-zinc-300 text-sm mt-2 line-clamp-2">{p.description}</p>
               <div className="mt-4 flex items-center justify-between">
