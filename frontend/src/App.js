@@ -18,7 +18,7 @@ const DisclaimerText = () => (
   <div className="space-y-4 text-sm leading-relaxed" data-testid="legal-text">
     <h3 className="text-emerald-400 font-semibold">FOOD AND DRUG ADMINISTRATION (FDA) DISCLOSURE</h3>
     <p>These statements have not been evaluated by the FDA and are not intended to diagnose, treat or cure any disease. Always check with your physician before starting a new dietary supplement program.</p>
-    <p><strong>80stixx.com</strong> does not sell or distribute any products that are in violation of the United States Controlled Substances Act (US.CSA). The company may grow, sell and distribute hemp based products.</p>
+    <p>We do not sell or distribute any products that are in violation of the United States Controlled Substances Act (US.CSA). The company may grow, sell and distribute hemp based products.</p>
     <p><strong>Shipping restrictions:</strong></p>
     <ul className="list-disc ml-5 space-y-1">
       <li>We cannot ship any cannabinoid products to: Alaska, Colorado, Delaware, Idaho, Iowa, Montana, New York, Nevada, Nebraska, North Dakota, Rhode Island, Vermont, Virginia, Utah, and Washington.</li>

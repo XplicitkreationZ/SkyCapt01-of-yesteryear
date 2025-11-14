@@ -143,12 +143,14 @@ async def create_order(items: List[CartItem], email: Optional[str] = None):
     await db.orders.insert_one(doc)
     return order
 
-# ----- Seed sample products -----
-@api_router.post("/seed")
-async def seed_products():
-    existing = await db.products.count_documents({})
-    if existing > 0:
-        return {"skipped": True, "count": existing}
+# ----- Sample data helpers -----
+STOCK_IMAGES = [
+    "https://images.unsplash.com/photo-1589141986943-5578615fdef2",  # buds pile
+    "https://images.unsplash.com/photo-1617101814633-c8a6cfd159cc",  # plant alt
+    "https://images.unsplash.com/photo-1626106576760-d64336d3fa5b",  # macro flower
+]
+
+async def _insert_samples():
     samples = [
         {
             "name": "Purple Runtz THCA Flower",
@@ -156,7 +158,7 @@ async def seed_products():
             "price": 34.99,
             "strain_type": "Hybrid",
             "size": "3.5g",
-            "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/ejzn7cjp_1000003676.png",
+            "image_url": STOCK_IMAGES[0],
         },
         {
             "name": "Gelato 41 THCA Flower",
@@ -164,7 +166,7 @@ async def seed_products():
             "price": 39.99,
             "strain_type": "Hybrid",
             "size": "3.5g",
-            "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/ud4ijrq8_1000003682.png",
+            "image_url": STOCK_IMAGES[1],
         },
         {
             "name": "OG Kush THCA Flower",
@@ -172,7 +174,7 @@ async def seed_products():
             "price": 29.99,
             "strain_type": "Indica",
             "size": "3.5g",
-            "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/nqz5f157_1000003894.png",
+            "image_url": STOCK_IMAGES[2],
         },
     ]
     docs = []
@@ -183,7 +185,24 @@ async def seed_products():
         docs.append(d)
     if docs:
         await db.products.insert_many(docs)
-    return {"inserted": len(docs)}
+
+# ----- Seed sample products -----
+@api_router.post("/seed")
+async def seed_products():
+    existing = await db.products.count_documents({})
+    if existing > 0:
+        return {"skipped": True, "count": existing}
+    await _insert_samples()
+    count = await db.products.count_documents({})
+    return {"inserted": count}
+
+# ----- Admin: reset samples (dev utility) -----
+@api_router.post("/admin/reset-samples")
+async def reset_samples():
+    await db.products.delete_many({})
+    await _insert_samples()
+    count = await db.products.count_documents({})
+    return {"reset": True, "count": count}
 
 # Include the router in the main app
 app.include_router(api_router)
