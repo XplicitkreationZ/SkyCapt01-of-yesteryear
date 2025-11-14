@@ -10,5 +10,14 @@ html, body, #root { height:100%; }
 /* Microinteractions */
 button{ transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
 
+/* Subtle floating background animations (brand-friendly) */
+@keyframes xz-drift-kf {
+  0% { transform: translate3d(0,0,0) rotate(0deg); }
+  50% { transform: translate3d(20px,-12px,0) rotate(3deg); }
+  100% { transform: translate3d(-10px,10px,0) rotate(-3deg); }
+}
+.xz-drift { animation: xz-drift-kf 16s ease-in-out infinite alternate; }
+.xz-drift-slow { animation: xz-drift-kf 24s ease-in-out infinite alternate; }
+
 /* Utility */
 .bg-grid { background-image: linear-gradient(rgba(51,255,87,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(51,255,87,.06) 1px, transparent 1px); background-size: 22px 22px; }

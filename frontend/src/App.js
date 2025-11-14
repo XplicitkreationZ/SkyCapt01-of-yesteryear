@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { HERO_IMAGES } from "@/components/HeroImages";
 import { ProductLabel } from "@/components/ProductLabel";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -97,7 +98,7 @@ function useProducts() {
 
 const Hero = () => (
   <section className="relative overflow-hidden" data-testid="hero">
-    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{background:`url(${HERO_IMAGES.flowerMacro}) center/cover no-repeat`}}/>
+    <AnimatedBackground />
     <div className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-[1.2fr_.8fr] gap-10 items-center">
       <div>
         <h1 className="font-['Space_Grotesk'] text-5xl md:text-6xl font-extrabold leading-tight text-white" data-testid="hero-title">XplicitkreationZ Exotics</h1>
@@ -122,7 +123,7 @@ const Catalog = ({ addToCart }) => {
     <section id="products" className="max-w-6xl mx-auto px-4 py-10" data-testid="catalog-grid">
       <h2 className="text-2xl text-white mb-6">Our Products</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Stock-feature tiles */}
+        {/* Stock-feature tiles with brand labels */}
         <Card className="bg-zinc-950/70 border-emerald-500/30">
           <CardHeader><CardTitle className="text-white">Prerolls</CardTitle></CardHeader>
           <CardContent>
