@@ -14,8 +14,8 @@ export const ProductLabel = ({ name, size }) => {
         <p className="text-xs text-white font-semibold">{name}</p>
         <p className="text-[10px] text-emerald-300">{size} • XplicitkreationZ</p>
       </div>
-      <div className="h-7 w-7 p-0.5 rounded-md bg-emerald-500/80">
-        <svg viewBox="0 0 24 24" className="h-full w-full text-black" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9a9 9 0 0 0-9-9m0 16a7 7 0 1 1 7-7a7 7 0 0 1-7 7"/><path fill="currentColor" d="M12 7a5 5 0 0 0-5 5h2a3 3 0 1 1 3 3v2a5 5 0 0 0 0-10"/></svg>
+      <div className="h-7 w-7 rounded-md bg-white p-[1px]">
+        <QRCode value={qrUrl} bgColor="#ffffff" fgColor="#111111" size={24} viewBox={`0 0 24 24`} />
       </div>
     </div>
   );
