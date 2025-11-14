@@ -145,9 +145,9 @@ async def create_order(items: List[CartItem], email: Optional[str] = None):
 
 # ----- Sample data helpers -----
 STOCK_IMAGES = [
-    "https://images.unsplash.com/photo-1558010089-ff6fd29ea39a",  # clear bag with buds
-    "https://images.pexels.com/photos/7230269/pexels-photo-7230269.jpeg",  # professional packaging
-    "https://images.unsplash.com/photo-1589141986943-5578615fdef2",  # buds pile (fallback)
+    "https://images.unsplash.com/photo-1559558260-dfa522cfd57c",  # clean buds studio on white
+    "https://images.unsplash.com/photo-1518465444133-93542d08fdd9",  # buds close-up on neutral bg
+    "https://images.unsplash.com/photo-1589141986943-5578615fdef2",  # buds pile
 ]
 
 async def _insert_samples():
