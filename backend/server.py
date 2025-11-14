@@ -166,7 +166,7 @@ async def _insert_samples():
             "price": 12.00,
             "strain_type": "Sativa",
             "size": "1g",
-            "image_url": STOCK_IMAGES[0],
+            "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c",
         },
         {
             "name": "Pineapple Express 3.5g Flower Bag",
