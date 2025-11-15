@@ -311,7 +311,10 @@ function App() {
   };
   return (
     <div className="App" data-testid="app-root">
-      {!ageOk && <AgeGate onPass={()=> setAgeOk(true)} />}
+      {/* Disable age gate on root path (coming soon), keep on others */}
+      {(!ageOk && (typeof window === 'undefined' ? true : window.location.pathname !== '/')) && (
+        <AgeGate onPass={()=> setAgeOk(true)} />
+      )}
       <BrowserRouter>
         <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
           <Routes>
