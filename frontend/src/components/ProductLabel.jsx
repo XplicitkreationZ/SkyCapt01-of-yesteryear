@@ -3,7 +3,7 @@ import QRCode from "react-qr-code";
 
 export const ProductLabel = ({ name, size }) => {
   const logo = "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/gj0h0vr4_XplicitkreationZ_20250626_162911_0000.png";
-  const base = typeof window !== 'undefined' ? window.location.origin : 'https://xplicitkreationz.com';
+  const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.xplicitkreationz.com';
   const qrUrl = `${base}/?p=${encodeURIComponent(name)}-${encodeURIComponent(size)}`;
   return (
     <div
