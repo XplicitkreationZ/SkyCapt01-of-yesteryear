@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-do
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -39,6 +40,7 @@ const Nav = ({ cartCount }) => (
         <span className="font-semibold tracking-wide text-emerald-400">XplicitkreationZ</span>
       </Link>
       <div className="flex gap-4 items-center">
+        <Link to="/shop" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-shop">Shop</Link>
         <Link to="/about" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-about">About</Link>
         <Link to="/cart" className="relative" data-testid="navbar-cart">
           <Button variant="secondary" className="rounded-full bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30">Cart
@@ -95,6 +97,39 @@ function useProducts() {
   },[]);
   return { items, loading, error };
 }
+
+const ComingSoon = () => {
+  const [email, setEmail] = useState("");
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!email) return toast.error("Enter your email");
+    try {
+      await axios.post(`${API}/waitlist`, { email, source: "coming-soon" });
+      toast.success("You're on the list! We'll notify you.");
+      setEmail("");
+    } catch (err) {
+      toast.error("Something went wrong");
+    }
+  };
+  return (
+    <section className="relative min-h-[70vh] flex items-center" data-testid="coming-soon">
+      <AnimatedBackground />
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <p className="text-emerald-400 uppercase tracking-widest text-sm">XplicitkreationZ</p>
+        <h1 className="text-5xl md:text-6xl font-extrabold text-white mt-2">Coming soon</h1>
+        <p className="text-zinc-300 mt-4 max-w-2xl">Premium THCA flower, prerolls, edibles and more. Join the waitlist to get launch drops and exclusive access.</p>
+        <form onSubmit={submit} className="mt-6 flex gap-3 max-w-md" data-testid="waitlist-form">
+          <Input data-testid="waitlist-email-input" type="email" placeholder="Email address" value={email} onChange={(e)=>setEmail(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
+          <Button data-testid="waitlist-submit-btn" type="submit" className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Notify me</Button>
+        </form>
+        <div className="mt-4 text-zinc-500 text-xs">By joining, you confirm you are 21+.</div>
+        <div className="mt-8">
+          <Link to="/shop" className="text-emerald-400 underline" data-testid="preview-shop-link">Preview the shop →</Link>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const Hero = () => (
   <section className="relative overflow-hidden" data-testid="hero">
@@ -315,7 +350,8 @@ function App() {
       <BrowserRouter>
         <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
           <Routes>
-            <Route path="/" element={<Home addToCart={addToCart} />} />
+            <Route path="/" element={<ComingSoon />} />
+            <Route path="/shop" element={<Home addToCart={addToCart} />} />
             <Route path="/about" element={<About />} />
             <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
           </Routes>

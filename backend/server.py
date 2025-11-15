@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
@@ -67,6 +67,17 @@ class Order(BaseModel):
     email: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: str = "mock_confirmed"  # mock checkout
+
+class WaitlistCreate(BaseModel):
+    email: EmailStr
+    source: Optional[str] = None
+
+class WaitlistEntry(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: EmailStr
+    source: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # ---------- Routes ----------
 @api_router.get("/")
@@ -142,6 +153,31 @@ async def create_order(items: List[CartItem], email: Optional[str] = None):
     doc['created_at'] = doc['created_at'].isoformat()
     await db.orders.insert_one(doc)
     return order
+
+# ----- Waitlist -----
+@api_router.post("/waitlist", response_model=WaitlistEntry)
+async def add_to_waitlist(payload: WaitlistCreate):
+    # idempotent on email
+    existing = await db.waitlist.find_one({"email": payload.email})
+    if existing:
+        # return existing as model
+        existing.pop('_id', None)
+        if isinstance(existing.get('created_at'), str):
+            existing['created_at'] = datetime.fromisoformat(existing['created_at'])
+        return WaitlistEntry(**existing)
+    entry = WaitlistEntry(email=payload.email, source=payload.source)
+    doc = entry.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.waitlist.insert_one(doc)
+    return entry
+
+@api_router.get("/waitlist", response_model=List[WaitlistEntry])
+async def list_waitlist():
+    items = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    for it in items:
+        if isinstance(it.get('created_at'), str):
+            it['created_at'] = datetime.fromisoformat(it['created_at'])
+    return items
 
 # ----- Sample data helpers -----
 STOCK_IMAGES = [
