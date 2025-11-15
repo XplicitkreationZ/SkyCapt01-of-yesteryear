@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -12,6 +12,7 @@ import { HERO_IMAGES } from "@/components/HeroImages";
 import { ProductLabel } from "@/components/ProductLabel";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Countdown } from "@/components/Countdown";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -134,7 +135,6 @@ const ComingSoon = () => {
   );
 };
 
-// ... rest of file unchanged below
 const Hero = () => (
   <section className="relative overflow-hidden" data-testid="hero">
     <AnimatedBackground />
@@ -154,38 +154,6 @@ const Hero = () => (
   </section>
 );
 
-const About = () => (
-  <div className="max-w-4xl mx-auto px-4 py-12 space-y-8" data-testid="about-page">
-    <h1 className="text-4xl md:text-5xl font-bold text-white" data-testid="about-title">XplicitKreationZ: We're about to change everything!</h1>
-    <p className="text-zinc-300 leading-relaxed" data-testid="about-intro">Launched in May 2024, XplicitKreationZ is changing the game. Using science and nature to craft high-quality cannabis products for both fun and function.</p>
-    <section data-testid="about-euphoria" className="space-y-2">
-      <h3 className="text-emerald-400 font-semibold">From Euphoria to Wellness</h3>
-      <p className="text-zinc-300">XKZ is more than just a fun high. We use THC-A and medical-grade CBD to address everyday needs. Whether it be a euphoric escape or relief from pain, our edibles, smokables, and topicals are designed with you in mind.</p>
-    </section>
-    <section data-testid="about-innovation" className="space-y-2">
-      <h3 className="text-emerald-400 font-semibold">Taste the Innovation</h3>
-      <p className="text-zinc-300">Explore our diverse range of edibles, premium flower, convenient vapes, and soothing topicals. And stay tuned for our upcoming pet care line!</p>
-    </section>
-    <section data-testid="about-people" className="space-y-2">
-      <h3 className="text-emerald-400 font-semibold">For the People</h3>
-      <p className="text-zinc-300">Everyone 21+ is welcome. Cannabis is for everyone, and we tailor our products to your needs.</p>
-    </section>
-    <section data-testid="about-batches" className="space-y-2">
-      <h3 className="text-emerald-400 font-semibold">Small Batches, Big Impact</h3>
-      <p className="text-zinc-300">We craft each small batch with five base ingredients and natural flavors, ensuring a pure and potent experience.</p>
-    </section>
-    <section data-testid="about-family" className="space-y-2">
-      <h3 className="text-emerald-400 font-semibold">A Family Affair</h3>
-      <p className="text-zinc-300">As a family-owned business, we bring diverse expertise to deliver exceptional products. From concept to consumption, quality and innovation are our top priorities.</p>
-    </section>
-    <section data-testid="about-cta" className="space-y-2">
-      <h3 className="text-emerald-400 font-semibold">Experience the Difference</h3>
-      <p className="text-zinc-300">Ready to explore handcrafted cannabis? Visit <a href="https://www.xplicitkreationz.com" target="_blank" rel="noreferrer" className="text-emerald-400 underline">www.xplicitkreationz.com</a> and discover the XKZ difference today!</p>
-    </section>
-  </div>
-);
-
-// remaining components (Catalog, CartPage, Footer, Layout, Home, App) stay as in previous version
 const Catalog = ({ addToCart }) => {
   const { items, loading, error } = useProducts();
   if (loading) return <p className="px-4 text-zinc-300" data-testid="catalog-loading">Loading…</p>;
@@ -248,58 +216,6 @@ const Catalog = ({ addToCart }) => {
   );
 };
 
-const CartPage = ({ cart, setCart }) => {
-  const navigate = useNavigate();
-  const subtotal = cart.reduce((s,i)=> s + i.price * i.qty, 0);
-  const tax = 0; // later
-  const total = (subtotal + tax).toFixed(2);
-  const checkout = async () => {
-    if (!cart.length) return toast.error("Cart is empty");
-    const items = cart.map(c=> ({ product_id: c.id, quantity: c.qty }));
-    const { data } = await axios.post(`${API}/orders`, items);
-    toast.success(`Order placed (mock) · Total $${data.total}`);
-    setCart([]);
-    navigate("/");
-  };
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-10" data-testid="cart-page">
-      <h2 className="text-2xl text-white mb-6">Your cart</h2>
-      {!cart.length ? <p className="text-zinc-300" data-testid="empty-cart">No items yet.</p> : (
-        <div className="space-y-4">
-          {cart.map(item=> (
-            <div key={item.id} className="flex items-center justify-between border-b border-emerald-500/20 pb-3" data-testid={`cart-item-${item.id}`}>
-              <div className="flex items-center gap-3">
-                <img alt="prod" src={item.image_url} className="h-14 w-14 rounded object-cover"/>
-                <div>
-                  <p className="text-white text-sm">{item.name}</p>
-                  <p className="text-zinc-400 text-xs">{item.size} · {item.strain_type}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-zinc-300 text-sm">Qty</span>
-                <input data-testid={`qty-input-${item.id}`} type="number" min="1" value={item.qty} onChange={(e)=>{
-                  const v = Math.max(1, Number(e.target.value));
-                  setCart(prev=> prev.map(p=> p.id===item.id? {...p, qty:v}:p));
-                }} className="w-16 rounded bg-zinc-900 border border-emerald-500/30 text-white px-2 py-1"/>
-                <span className="text-white font-semibold">${(item.price*item.qty).toFixed(2)}</span>
-                <Button data-testid={`remove-item-${item.id}`} onClick={()=> setCart(prev=> prev.filter(p=> p.id!==item.id))} variant="secondary" className="rounded-full bg-transparent border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10">Remove</Button>
-              </div>
-            </div>
-          ))}
-          <div className="flex justify-end text-white gap-8 pt-4">
-            <div className="text-right space-y-1">
-              <div className="flex justify-between gap-8"><span className="text-zinc-300">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between gap-8"><span className="text-zinc-300">Tax</span><span>${tax.toFixed(2)}</span></div>
-              <div className="flex justify-between gap-8 font-semibold"><span>Total</span><span data-testid="cart-total">${total}</span></div>
-              <Button data-testid="checkout-btn" onClick={checkout} className="mt-3 w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Checkout (mock)</Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Layout = ({ children, cartCount }) => (
   <div className="min-h-screen" style={{background: brand.black}}>
     <div className="absolute inset-0 -z-10" style={{background:"radial-gradient(800px 300px at 20% -5%, rgba(126,44,251,.25), transparent), radial-gradient(800px 300px at 80% -5%, rgba(16,185,129,.25), transparent)"}}/>
@@ -336,8 +252,6 @@ function App() {
       if (ex) return prev.map(i=> i.id===p.id? {...i, qty:i.qty+1}: i);
       return [...prev, {...p, qty:1}];
     });
-  const shouldGate = typeof window !== 'undefined' && window.location && window.location.pathname !== '/';
-
     toast.success("Added to cart");
   };
   return (
@@ -347,18 +261,19 @@ function App() {
         <AgeGate onPass={()=> setAgeOk(true)} />
       )}
       <BrowserRouter>
-        <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
-          <Routes>
-            <Route path="/" element={<ComingSoon />} />
-            <Route path="/shop" element={<Home addToCart={addToCart} />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
-          </Routes>
-        </Layout>
+        <ErrorBoundary>
+          <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
+            <Routes>
+              <Route path="/" element={<ComingSoon />} />
+              <Route path="/shop" element={<Home addToCart={addToCart} />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+            </Routes>
+          </Layout>
+        </ErrorBoundary>
       </BrowserRouter>
     </div>
   );
 }
 
 export default App;
-
