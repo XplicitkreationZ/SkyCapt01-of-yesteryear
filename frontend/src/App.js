@@ -155,3 +155,174 @@ const Hero = () => (
 );
 
 // remaining components (Catalog, CartPage, About, Footer, Layout, Home, App) stay as in previous version
+const Catalog = ({ addToCart }) => {
+  const { items, loading, error } = useProducts();
+  if (loading) return <p className="px-4 text-zinc-300" data-testid="catalog-loading">Loading…</p>;
+  if (error) return <p className="px-4 text-red-300" data-testid="catalog-error">{error}</p>;
+  return (
+    <section id="products" className="max-w-6xl mx-auto px-4 py-10" data-testid="catalog-grid">
+      <h2 className="text-2xl text-white mb-6">Our Products</h2>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="bg-zinc-950/70 border-emerald-500/30">
+          <CardHeader><CardTitle className="text-white">Prerolls</CardTitle></CardHeader>
+          <CardContent>
+            <div className="relative">
+              <img alt="prerolls" src={HERO_IMAGES.preroll1} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <ProductLabel name="Prerolls" size="2g" />
+            </div>
+            <p className="text-zinc-300 text-sm">Smooth burn, bold terp profile.</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-zinc-950/70 border-emerald-500/30">
+          <CardHeader><CardTitle className="text-white">Flower Buds</CardTitle></CardHeader>
+          <CardContent>
+            <div className="relative">
+              <img alt="buds" src={HERO_IMAGES.budsPile} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <ProductLabel name="Craft Flower" size="3.5g" />
+            </div>
+            <p className="text-zinc-300 text-sm">Trichome-rich, hand selected.</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-zinc-950/70 border-emerald-500/30">
+          <CardHeader><CardTitle className="text-white">Jar Reserve</CardTitle></CardHeader>
+          <CardContent>
+            <div className="relative">
+              <img alt="jar" src={HERO_IMAGES.jarBuds} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <ProductLabel name="Jar Reserve" size="7g" />
+            </div>
+            <p className="text-zinc-300 text-sm">Fresh-sealed, curated batches.</p>
+          </CardContent>
+        </Card>
+        {items.map(p=> (
+          <Card key={p.id} className="bg-zinc-950/70 border-emerald-500/30 hover:border-emerald-400/60 transition-colors" data-testid={`product-card-${p.id}`}>
+            <CardHeader>
+              <CardTitle className="text-white text-lg">{p.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <img alt={p.name} src={p.image_url} className="h-40 w-full object-cover rounded-md mb-3"/>
+                <ProductLabel name={p.name.split(" ")[0]} size={p.size} />
+              </div>
+              <p className="text-emerald-300 text-sm">{p.strain_type} · {p.size}</p>
+              <p className="text-zinc-300 text-sm mt-2 line-clamp-2">{p.description}</p>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-white font-semibold">${p.price.toFixed(2)}</span>
+                <Button data-testid={`add-to-cart-${p.id}`} onClick={()=> addToCart(p)} className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Add to cart</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const CartPage = ({ cart, setCart }) => {
+  const navigate = useNavigate();
+  const subtotal = cart.reduce((s,i)=> s + i.price * i.qty, 0);
+  const tax = 0; // later
+  const total = (subtotal + tax).toFixed(2);
+  const checkout = async () => {
+    if (!cart.length) return toast.error("Cart is empty");
+    const items = cart.map(c=> ({ product_id: c.id, quantity: c.qty }));
+    const { data } = await axios.post(`${API}/orders`, items);
+    toast.success(`Order placed (mock) · Total $${data.total}`);
+    setCart([]);
+    navigate("/");
+  };
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-10" data-testid="cart-page">
+      <h2 className="text-2xl text-white mb-6">Your cart</h2>
+      {!cart.length ? <p className="text-zinc-300" data-testid="empty-cart">No items yet.</p> : (
+        <div className="space-y-4">
+          {cart.map(item=> (
+            <div key={item.id} className="flex items-center justify-between border-b border-emerald-500/20 pb-3" data-testid={`cart-item-${item.id}`}>
+              <div className="flex items-center gap-3">
+                <img alt="prod" src={item.image_url} className="h-14 w-14 rounded object-cover"/>
+                <div>
+                  <p className="text-white text-sm">{item.name}</p>
+                  <p className="text-zinc-400 text-xs">{item.size} · {item.strain_type}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-zinc-300 text-sm">Qty</span>
+                <input data-testid={`qty-input-${item.id}`} type="number" min="1" value={item.qty} onChange={(e)=>{
+                  const v = Math.max(1, Number(e.target.value));
+                  setCart(prev=> prev.map(p=> p.id===item.id? {...p, qty:v}:p));
+                }} className="w-16 rounded bg-zinc-900 border border-emerald-500/30 text-white px-2 py-1"/>
+                <span className="text-white font-semibold">${(item.price*item.qty).toFixed(2)}</span>
+                <Button data-testid={`remove-item-${item.id}`} onClick={()=> setCart(prev=> prev.filter(p=> p.id!==item.id))} variant="secondary" className="rounded-full bg-transparent border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10">Remove</Button>
+              </div>
+            </div>
+          ))}
+          <div className="flex justify-end text-white gap-8 pt-4">
+            <div className="text-right space-y-1">
+              <div className="flex justify-between gap-8"><span className="text-zinc-300">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between gap-8"><span className="text-zinc-300">Tax</span><span>${tax.toFixed(2)}</span></div>
+              <div className="flex justify-between gap-8 font-semibold"><span>Total</span><span data-testid="cart-total">${total}</span></div>
+              <Button data-testid="checkout-btn" onClick={checkout} className="mt-3 w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Checkout (mock)</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Layout = ({ children, cartCount }) => (
+  <div className="min-h-screen" style={{background: brand.black}}>
+    <div className="absolute inset-0 -z-10" style={{background:"radial-gradient(800px 300px at 20% -5%, rgba(126,44,251,.25), transparent), radial-gradient(800px 300px at 80% -5%, rgba(16,185,129,.25), transparent)"}}/>
+    <Nav cartCount={cartCount} />
+    <main className="pb-20">{children}</main>
+    <footer className="border-t border-emerald-500/20 py-10 mt-10" data-testid="footer">
+      <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-8">
+        <div>
+          <p className="text-white font-semibold">XplicitkreationZ</p>
+          <p className="text-zinc-400 text-sm">Craft THCA products. © {new Date().getFullYear()}</p>
+        </div>
+        <div>
+          <DisclaimerText />
+        </div>
+      </div>
+    </footer>
+    <Toaster richColors />
+  </div>
+);
+
+const Home = ({ addToCart }) => (
+  <>
+    <Hero />
+    <Catalog addToCart={addToCart} />
+  </>
+);
+
+function App() {
+  const [ageOk, setAgeOk] = useState(false);
+  const [cart, setCart] = useState([]);
+  const addToCart = (p)=>{
+    setCart(prev=>{
+      const ex = prev.find(i=> i.id===p.id);
+      if (ex) return prev.map(i=> i.id===p.id? {...i, qty:i.qty+1}: i);
+      return [...prev, {...p, qty:1}];
+    });
+    toast.success("Added to cart");
+  };
+  return (
+    <div className="App" data-testid="app-root">
+      {!ageOk && <AgeGate onPass={()=> setAgeOk(true)} />}
+      <BrowserRouter>
+        <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
+          <Routes>
+            <Route path="/" element={<ComingSoon />} />
+            <Route path="/shop" element={<Home addToCart={addToCart} />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </div>
+  );
+}
+
+export default App;
+
