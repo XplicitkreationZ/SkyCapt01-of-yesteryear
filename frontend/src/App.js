@@ -305,6 +305,8 @@ function App() {
       if (ex) return prev.map(i=> i.id===p.id? {...i, qty:i.qty+1}: i);
       return [...prev, {...p, qty:1}];
     });
+  const shouldGate = typeof window !== 'undefined' && window.location && window.location.pathname !== '/';
+
     toast.success("Added to cart");
   };
   return (
