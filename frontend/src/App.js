@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,6 +13,7 @@ import { ProductLabel } from "@/components/ProductLabel";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Countdown } from "@/components/Countdown";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+const About = lazy(() => import("@/pages/About"));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -263,12 +264,14 @@ function App() {
       <BrowserRouter>
         <ErrorBoundary>
           <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
-            <Routes>
-              <Route path="/" element={<ComingSoon />} />
-              <Route path="/shop" element={<Home addToCart={addToCart} />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
-            </Routes>
+            <Suspense fallback={<div className="p-6 text-zinc-300" data-testid="lazy-loading">Loading…</div>}>
+              <Routes>
+                <Route path="/" element={<ComingSoon />} />
+                <Route path="/shop" element={<Home addToCart={addToCart} />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+              </Routes>
+            </Suspense>
           </Layout>
         </ErrorBoundary>
       </BrowserRouter>
