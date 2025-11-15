@@ -3,7 +3,17 @@ import React, { useEffect, useState } from "react";
 const pad = (n) => String(n).padStart(2, "0");
 
 export const Countdown = ({ targetISO }) => {
-  const target = targetISO ? new Date(targetISO).getTime() : Date.now() + 1000 * 60 * 60 * 24 * 14; // default 14 days
+  let target;
+  if (targetISO && /\d{4}-\d{2}-\d{2}T/.test(targetISO)) {
+    target = new Date(targetISO).getTime();
+  } else if (targetISO && /^(\d+)([dhm])$/.test(targetISO)) {
+    const [, amount, unit] = targetISO.match(/^(\d+)([dhm])$/);
+    const n = parseInt(amount, 10);
+    const ms = unit === 'd' ? n*24*60*60*1000 : unit === 'h' ? n*60*60*1000 : n*60*1000;
+    target = Date.now() + ms;
+  } else {
+    target = Date.now() + 1000 * 60 * 60 * 24 * 14; // default 14 days
+  }
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
