@@ -222,15 +222,6 @@ async def _insert_samples():
         },
         {
             "name": "Pineapple Express 3.5g Flower Bag",
-@app.on_event("startup")
-async def create_indexes():
-    try:
-        await db.products.create_index("id", unique=True)
-        await db.waitlist.create_index("email", unique=True)
-        await db.waitlist.create_index([("created_at", -1)])
-    except Exception as e:
-        logger.warning(f"Index creation issue: {e}")
-
             "description": "Tropical sweetness meets energetic vibes.",
             "price": 32.00,
             "strain_type": "Hybrid",
