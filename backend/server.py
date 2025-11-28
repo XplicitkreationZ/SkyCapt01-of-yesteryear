@@ -22,6 +22,8 @@ db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
 app = FastAPI()
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
