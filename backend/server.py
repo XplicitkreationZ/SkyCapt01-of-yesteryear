@@ -84,6 +84,18 @@ class WaitlistEntry(BaseModel):
 async def root():
     return {"message": "Hello World"}
 
+@api_router.get("/health")
+async def health():
+    return {"status": "ok"}
+
+@api_router.get("/ready")
+async def ready():
+    try:
+        await db.command("ping")
+        return {"status": "ready", "mongo": True}
+    except Exception as e:
+        return {"status": "degraded", "mongo": False, "error": str(e)}
+
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
     status_obj = StatusCheck(**input.model_dump())
