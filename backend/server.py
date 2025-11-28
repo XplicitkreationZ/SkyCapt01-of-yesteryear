@@ -246,6 +246,13 @@ async def _insert_samples():
     if docs:
         await db.products.insert_many(docs)
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 @app.on_event("startup")
 async def create_indexes():
     try:
