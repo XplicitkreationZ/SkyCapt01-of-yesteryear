@@ -246,6 +246,15 @@ async def _insert_samples():
     if docs:
         await db.products.insert_many(docs)
 
+@app.on_event("startup")
+async def create_indexes():
+    try:
+        await db.products.create_index("id", unique=True)
+        await db.waitlist.create_index("email", unique=True)
+        await db.waitlist.create_index([("created_at", -1)])
+    except Exception as e:
+        logger.warning(f"Index creation issue: {e}")
+
 # ----- Seed sample products -----
 @api_router.post("/seed")
 async def seed_products():
