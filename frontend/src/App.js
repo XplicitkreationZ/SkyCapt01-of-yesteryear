@@ -14,6 +14,7 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Countdown } from "@/components/Countdown";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 const About = lazy(() => import("@/pages/About"));
+const CartPage = lazy(() => import("@/pages/CartPage"));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
