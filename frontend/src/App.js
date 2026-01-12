@@ -120,7 +120,7 @@ const ComingSoon = () => {
   const launchAt = process.env.REACT_APP_LAUNCH_AT || null;
   return (
     <section className="relative min-h-[70vh] flex items-center" data-testid="coming-soon">
-      <AnimatedBackground />
+      {showBg && <AnimatedBackground />}
       <div className="max-w-4xl mx-auto px-4 py-16">
         <p className="text-emerald-400 uppercase tracking-widest text-sm">XplicitkreationZ</p>
         <h1 className="text-5xl md:text-6xl font-extrabold text-white mt-2">Coming soon</h1>
@@ -141,7 +141,7 @@ const ComingSoon = () => {
 
 const Hero = () => (
   <section className="relative overflow-hidden" data-testid="hero">
-    <AnimatedBackground />
+    {showBg && <AnimatedBackground />}
     <div className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-[1.2fr_.8fr] gap-10 items-center">
       <div>
         <h1 className="font-['Space_Grotesk'] text-5xl md:text-6xl font-extrabold leading-tight text-white" data-testid="hero-title">XplicitkreationZ Exotics</h1>
