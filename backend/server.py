@@ -6,14 +6,13 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
+from fastapi.middleware.gzip import GZipMiddleware
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
-from fastapi.middleware.gzip import GZipMiddleware
-
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -23,7 +22,6 @@ db = client[os.environ['DB_NAME']]
 # Create the main app without a prefix
 app = FastAPI()
 app.add_middleware(GZipMiddleware, minimum_size=500)
-
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -47,6 +45,7 @@ class Product(BaseModel):
     strain_type: Optional[str] = None  # Indica/Sativa/Hybrid
     size: Optional[str] = None  # 3.5g, 7g, etc
     image_url: Optional[str] = None
+    coa_url: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
@@ -56,10 +55,21 @@ class ProductCreate(BaseModel):
     strain_type: Optional[str] = None
     size: Optional[str] = None
     image_url: Optional[str] = None
+    coa_url: Optional[str] = None
 
 class CartItem(BaseModel):
     product_id: str
     quantity: int = 1
+
+class Address(BaseModel):
+    name: str
+    phone: str
+    address1: str
+    address2: Optional[str] = None
+    city: str
+    state: str
+    zip: str
+    dob: str  # YYYY-MM-DD
 
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -72,16 +82,69 @@ class Order(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: str = "mock_confirmed"  # mock checkout
 
-class WaitlistCreate(BaseModel):
-    email: EmailStr
-    source: Optional[str] = None
+class OrderDeliveryCreate(BaseModel):
+    items: List[CartItem]
+    address: Address
 
-class WaitlistEntry(BaseModel):
+class OrderDelivery(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    email: EmailStr
-    source: Optional[str] = None
+    items: List[CartItem]
+    address: Address
+    subtotal: float
+    delivery_fee: float
+    tax: float
+    total: float
+    tier: Optional[str] = None
+    payment_method: str = "card"
+    payment_status: str = "mock_authorized"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    status: str = "pending_dispatch"
+
+class DeliveryQuoteRequest(BaseModel):
+    zip: str
+    subtotal: float
+
+class DeliveryQuoteResponse(BaseModel):
+    allowed: bool
+    fee: float
+    min_order: float
+    tier: Optional[str] = None
+    reason: Optional[str] = None
+
+# ---------- Utility ----------
+TX_ZIP_RANGES: List[Tuple[int, int]] = [
+    (73301, 73399),
+    (75001, 79999),
+    (88510, 88595)
+]
+
+DELIVERY_TIERS = [
+    {"name": "Zone A", "zip_ranges": [(75000, 75299)], "fee": 7.0, "min_order": 25.0},
+    {"name": "Zone B", "zip_ranges": [(75300, 75999)], "fee": 12.0, "min_order": 50.0},
+    {"name": "Zone C", "zip_ranges": [(76000, 76999)], "fee": 15.0, "min_order": 75.0},
+]
+
+def is_tx_zip(zip_str: str) -> bool:
+    try:
+        z = int(zip_str[:5])
+    except Exception:
+        return False
+    for a, b in TX_ZIP_RANGES:
+        if a <= z <= b:
+            return True
+    return False
+
+def tier_for_zip(zip_str: str):
+    try:
+        z = int(zip_str[:5])
+    except Exception:
+        return None
+    for t in DELIVERY_TIERS:
+        for a, b in t["zip_ranges"]:
+            if a <= z <= b:
+                return t
+    return None
 
 # ---------- Routes ----------
 @api_router.get("/")
@@ -149,7 +212,7 @@ async def delete_product(product_id: str):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"ok": True}
 
-# ----- Mock checkout -----
+# ----- Mock checkout (legacy) -----
 @api_router.post("/orders", response_model=Order)
 async def create_order(items: List[CartItem], email: Optional[str] = None):
     # calculate subtotal from DB prices
@@ -170,30 +233,78 @@ async def create_order(items: List[CartItem], email: Optional[str] = None):
     await db.orders.insert_one(doc)
     return order
 
-# ----- Waitlist -----
-@api_router.post("/waitlist", response_model=WaitlistEntry)
-async def add_to_waitlist(payload: WaitlistCreate):
-    # idempotent on email
-    existing = await db.waitlist.find_one({"email": payload.email})
-    if existing:
-        # return existing as model
-        existing.pop('_id', None)
-        if isinstance(existing.get('created_at'), str):
-            existing['created_at'] = datetime.fromisoformat(existing['created_at'])
-        return WaitlistEntry(**existing)
-    entry = WaitlistEntry(email=payload.email, source=payload.source)
-    doc = entry.model_dump()
-    doc['created_at'] = doc['created_at'].isoformat()
-    await db.waitlist.insert_one(doc)
-    return entry
+# ----- Delivery quote & orders -----
+@api_router.post("/delivery/quote", response_model=DeliveryQuoteResponse)
+async def delivery_quote(payload: DeliveryQuoteRequest):
+    if not is_tx_zip(payload.zip):
+        return DeliveryQuoteResponse(allowed=False, fee=0.0, min_order=0.0, reason="Texas only")
+    tier = tier_for_zip(payload.zip)
+    if not tier:
+        return DeliveryQuoteResponse(allowed=False, fee=0.0, min_order=0.0, reason="Zip not serviced")
+    fee = float(tier['fee'])
+    min_order = float(tier['min_order'])
+    allowed = payload.subtotal >= min_order
+    reason = None if allowed else f"Minimum order ${min_order:.2f} for {tier['name']}"
+    return DeliveryQuoteResponse(allowed=allowed, fee=fee, min_order=min_order, tier=tier['name'], reason=reason)
 
-@api_router.get("/waitlist", response_model=List[WaitlistEntry])
-async def list_waitlist():
-    items = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    for it in items:
-        if isinstance(it.get('created_at'), str):
-            it['created_at'] = datetime.fromisoformat(it['created_at'])
-    return items
+@api_router.post("/orders/delivery", response_model=OrderDelivery)
+async def create_delivery_order(payload: OrderDeliveryCreate):
+    # validate age
+    try:
+        dob = datetime.fromisoformat(payload.address.dob).date()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid DOB format, use YYYY-MM-DD")
+    today = date.today()
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    if age < 21:
+        raise HTTPException(status_code=400, detail="Must be 21+")
+    # validate state
+    if payload.address.state.upper() != 'TX':
+        raise HTTPException(status_code=400, detail="Texas only")
+    # compute subtotal
+    ids = [i.product_id for i in payload.items]
+    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(100)
+    price_map = {p['id']: p['price'] for p in found}
+    subtotal = 0.0
+    for it in payload.items:
+        price = price_map.get(it.product_id)
+        if price is None:
+            raise HTTPException(status_code=400, detail=f"Invalid product {it.product_id}")
+        subtotal += price * it.quantity
+    # quote
+    q = await delivery_quote(DeliveryQuoteRequest(zip=payload.address.zip, subtotal=subtotal))
+    if not q.allowed:
+        raise HTTPException(status_code=400, detail=q.reason or "Not allowed")
+    tax = 0.0  # add later
+    total = round(subtotal + q.fee + tax, 2)
+    order = OrderDelivery(
+        items=payload.items,
+        address=payload.address,
+        subtotal=round(subtotal, 2),
+        delivery_fee=q.fee,
+        tax=tax,
+        total=total,
+        tier=q.tier,
+    )
+    doc = order.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.delivery_orders.insert_one(doc)
+    return order
+
+class StatusUpdate(BaseModel):
+    status: str
+    dispatcher_note: Optional[str] = None
+
+@api_router.patch("/orders/{order_id}/status")
+async def update_order_status(order_id: str, payload: StatusUpdate):
+    res = await db.delivery_orders.update_one({"id": order_id}, {"$set": {"status": payload.status, "dispatcher_note": payload.dispatcher_note}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"ok": True}
+
+@api_router.get("/config/tiers")
+async def get_tiers():
+    return DELIVERY_TIERS
 
 # ----- Sample data helpers -----
 STOCK_IMAGES = [
@@ -211,6 +322,7 @@ async def _insert_samples():
             "strain_type": "Hybrid",
             "size": "3.5g",
             "image_url": STOCK_IMAGES[1],
+            "coa_url": "https://example.com/coa/blue-dream.pdf",
         },
         {
             "name": "Sour Diesel 1g Gram Bag",
@@ -219,6 +331,7 @@ async def _insert_samples():
             "strain_type": "Sativa",
             "size": "1g",
             "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c",
+            "coa_url": "https://example.com/coa/sour-diesel.pdf",
         },
         {
             "name": "Pineapple Express 3.5g Flower Bag",
@@ -227,6 +340,7 @@ async def _insert_samples():
             "strain_type": "Hybrid",
             "size": "3.5g",
             "image_url": STOCK_IMAGES[2],
+            "coa_url": "https://example.com/coa/pineapple-express.pdf",
         },
         {
             "name": "Wedding Cake 1g Gram Bag",
@@ -235,6 +349,7 @@ async def _insert_samples():
             "strain_type": "Indica",
             "size": "1g",
             "image_url": STOCK_IMAGES[0],
+            "coa_url": "https://example.com/coa/wedding-cake.pdf",
         },
     ]
     docs = []
@@ -259,6 +374,7 @@ async def create_indexes():
         await db.products.create_index("id", unique=True)
         await db.waitlist.create_index("email", unique=True)
         await db.waitlist.create_index([("created_at", -1)])
+        await db.delivery_orders.create_index([("created_at", -1)])
     except Exception as e:
         logger.warning(f"Index creation issue: {e}")
 
