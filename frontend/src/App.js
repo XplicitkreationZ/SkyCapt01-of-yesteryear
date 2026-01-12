@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { HERO_IMAGES } from "@/components/HeroImages";
 import { ProductLabel } from "@/components/ProductLabel";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
+const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
+const showBg = !isProd;
 import { Countdown } from "@/components/Countdown";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 const About = lazy(() => import("@/pages/About"));
