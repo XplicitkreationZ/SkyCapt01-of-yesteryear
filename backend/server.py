@@ -120,9 +120,9 @@ TX_ZIP_RANGES: List[Tuple[int, int]] = [
 ]
 
 DELIVERY_TIERS = [
-    {"name": "Zone A", "zip_ranges": [(75000, 75299)], "fee": 7.0, "min_order": 25.0},
-    {"name": "Zone B", "zip_ranges": [(75300, 75999)], "fee": 12.0, "min_order": 50.0},
-    {"name": "Zone C", "zip_ranges": [(76000, 76999)], "fee": 15.0, "min_order": 75.0},
+    {"name": "Zone A", "zip_ranges": [(75001, 75254), (75270, 75287)], "fee": 7.0, "min_order": 25.0},
+    {"name": "Zone B", "zip_ranges": [(75201, 75399), (76001, 76199)], "fee": 12.0, "min_order": 50.0},
+    {"name": "Zone C", "zip_ranges": [(76200, 76999)], "fee": 15.0, "min_order": 75.0},
 ]
 
 def is_tx_zip(zip_str: str) -> bool:
