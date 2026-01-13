@@ -11,12 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { HERO_IMAGES } from "@/components/HeroImages";
 import { ProductLabel } from "@/components/ProductLabel";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
-const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
-const showBg = !isProd;
 import { Countdown } from "@/components/Countdown";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 const About = lazy(() => import("@/pages/About"));
 const CartPage = lazy(() => import("@/pages/CartPage"));
+const FAQ = lazy(() => import("@/pages/FAQ"));
+const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
+const showBg = !isProd;
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -47,6 +48,7 @@ const Nav = ({ cartCount }) => (
       </Link>
       <div className="flex gap-4 items-center">
         <Link to="/shop" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-shop">Shop</Link>
+        <Link to="/faq" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-faq">FAQ</Link>
         <Link to="/about" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-about">About</Link>
         <Link to="/cart" className="relative" data-testid="navbar-cart">
           <Button variant="secondary" className="rounded-full bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30">Cart
@@ -271,6 +273,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<ComingSoon />} />
                 <Route path="/shop" element={<Home addToCart={addToCart} />} />
+                <Route path="/faq" element={<FAQ />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
               </Routes>
