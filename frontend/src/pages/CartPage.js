@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DeliveryDisclaimer } from "@/components/DeliveryDisclaimer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -34,7 +35,7 @@ export default function CartPage({ cart, setCart }){
       const address = { name, phone, address1, city, state, zip, dob };
       await axios.post(`${API}/orders/delivery`, { items, address });
       setCart([]);
-      window.location.href = "/?order=success";
+      window.location.href = "/order-confirmation?ok=1";
     }catch(e){
       console.error(e);
       alert(e?.response?.data?.detail || "Failed to place order");
@@ -42,8 +43,9 @@ export default function CartPage({ cart, setCart }){
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10" data-testid="cart-page">
-      <h2 className="text-2xl text-white mb-6">Your cart</h2>
+    <div className="max-w-4xl mx-auto px-4 py-10 space-y-6" data-testid="cart-page">
+      <DeliveryDisclaimer />
+      <h2 className="text-2xl text-white">Your cart</h2>
       {!cart.length ? <p className="text-zinc-300" data-testid="empty-cart">No items yet.</p> : (
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-4">
@@ -82,7 +84,7 @@ export default function CartPage({ cart, setCart }){
             </div>
             {quote && (
               <div className="text-sm text-zinc-300" data-testid="delivery-quote">
-                <div>Zone: {quote.tier || 'N/A'}</div>
+                <div>Zone: {quote.tier || 'N/A'} · Distance: {quote.distance_miles ?? '–'} mi</div>
                 <div>Delivery fee: ${quote.fee.toFixed(2)}</div>
                 <div>Minimum: ${quote.min_order.toFixed(2)} {quote.allowed ? '(met)' : '(not met)'}</div>
                 {!quote.allowed && <div className="text-red-300">{quote.reason}</div>}

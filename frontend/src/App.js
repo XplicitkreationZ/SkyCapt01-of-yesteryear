@@ -13,9 +13,11 @@ import { ProductLabel } from "@/components/ProductLabel";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Countdown } from "@/components/Countdown";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DeliveryDisclaimer } from "@/components/DeliveryDisclaimer";
 const About = lazy(() => import("@/pages/About"));
 const CartPage = lazy(() => import("@/pages/CartPage"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
+const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
 const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
 const showBg = !isProd;
 
@@ -234,7 +236,7 @@ const Layout = ({ children, cartCount }) => (
           <p className="text-zinc-400 text-sm">Craft THCA products. © {new Date().getFullYear()}</p>
         </div>
         <div>
-          <DisclaimerText />
+          <DeliveryDisclaimer compact />
         </div>
       </div>
     </footer>
@@ -262,7 +264,6 @@ function App() {
   };
   return (
     <div className="App" data-testid="app-root">
-      {/* Disable age gate on root path (coming soon), keep on others */}
       {(!ageOk && (typeof window === 'undefined' ? true : window.location.pathname !== '/')) && (
         <AgeGate onPass={()=> setAgeOk(true)} />
       )}
@@ -276,6 +277,7 @@ function App() {
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
               </Routes>
             </Suspense>
           </Layout>
