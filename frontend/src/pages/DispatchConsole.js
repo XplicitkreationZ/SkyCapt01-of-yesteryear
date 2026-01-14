@@ -325,7 +325,12 @@ export default function DispatchConsole() {
                           <div className="mt-2 pt-2 border-t border-zinc-800">
                             <p className="text-zinc-500 text-xs mb-1">Items:</p>
                             <p className="text-zinc-300 text-sm">
-                              {order.items.map(item => `${item.name} (x${item.qty})`).join(", ")}
+                              {order.items.map(item => {
+                                const name = item.name || `Product #${item.product_id?.slice(0,6) || '???'}`;
+                                const qty = item.qty || item.quantity || 1;
+                                const variant = item.variant ? ` - ${item.variant}` : '';
+                                return `${name}${variant} (x${qty})`;
+                              }).join(", ")}
                             </p>
                           </div>
                         )}
