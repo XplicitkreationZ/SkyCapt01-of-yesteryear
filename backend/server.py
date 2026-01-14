@@ -41,6 +41,7 @@ class Product(BaseModel):
     description: Optional[str] = ""
     price: float
     category: Optional[str] = None
+    product_type: Optional[str] = None  # "Flower" or "Pre-Roll" for Consumables
     brand: Optional[str] = None
     strain_type: Optional[str] = None
     size: Optional[str] = None
@@ -53,6 +54,7 @@ class ProductCreate(BaseModel):
     description: Optional[str] = ""
     price: float
     category: Optional[str] = None
+    product_type: Optional[str] = None
     brand: Optional[str] = None
     strain_type: Optional[str] = None
     size: Optional[str] = None
