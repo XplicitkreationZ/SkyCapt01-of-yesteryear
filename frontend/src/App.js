@@ -38,7 +38,10 @@ const Nav = ({ cartCount }) => (
     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <Link to="/" className="flex items-center gap-3" data-testid="navbar-logo">
         <img alt="XplicitkreationZ logo" src="https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/gj0h0vr4_XplicitkreationZ_20250626_162911_0000.png" className="h-10 w-10 rounded-full ring-2 ring-emerald-500"/>
-        <span className="font-semibold tracking-wide text-emerald-400">XplicitkreationZ</span>
+        <div className="flex flex-col">
+          <span className="font-bold tracking-wide text-emerald-400 text-lg leading-tight">XplicitkreationZ</span>
+          <span className="text-[10px] text-zinc-400 tracking-widest uppercase">Smoke Shop Delivered</span>
+        </div>
       </Link>
       <div className="flex gap-4 items-center">
         <Link to="/shop" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-shop">Shop</Link>
