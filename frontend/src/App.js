@@ -366,26 +366,40 @@ const Home = ({ addToCart }) => (<Catalog addToCart={addToCart} />);
 export default function App() {
   const [ageOk, setAgeOk] = useState(false);
   const [cart, setCart] = useState([]);
-  const addToCart = (p)=>{ setCart(prev=>{ const ex=prev.find(i=>i.id===p.id); if(ex) return prev.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...prev,{...p,qty:1}];}); toast.success("Added to cart"); };
+  const addToCart = (p)=>{ setCart(prev=>{ const ex=prev.find(i=>i.id===p.id && i.selectedVariant?.name===p.selectedVariant?.name); if(ex) return prev.map(i=>(i.id===p.id && i.selectedVariant?.name===p.selectedVariant?.name)?{...i,qty:i.qty+1}:i); return [...prev,{...p,qty:1}];}); toast.success("Added to cart"); };
+  
+  // Check if on admin route
+  const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  
   return (
     <div className="App" data-testid="app-root">
-      {(!ageOk && (typeof window === 'undefined' ? true : window.location.pathname !== '/')) && (<AgeGate onPass={()=> setAgeOk(true)} />)}
+      {(!ageOk && !isAdminRoute && (typeof window === 'undefined' ? true : window.location.pathname !== '/')) && (<AgeGate onPass={()=> setAgeOk(true)} />)}
       <BrowserRouter>
         <ErrorBoundary>
-          <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
-            <Suspense fallback={<div className="p-6 text-zinc-300" data-testid="lazy-loading">Loading…</div>}>
-              <Routes>
-                <Route path="/" element={<Home addToCart={addToCart} />} />
-                <Route path="/shop" element={<Home addToCart={addToCart} />} />
-                <Route path="/product/:productId" element={<ProductDetail addToCart={addToCart} />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
-                <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                <Route path="/admin" element={<DispatchConsole />} />
-              </Routes>
-            </Suspense>
-          </Layout>
+          <Routes>
+            {/* Admin route outside of Layout */}
+            <Route path="/admin" element={
+              <Suspense fallback={<div className="p-6 text-zinc-300">Loading...</div>}>
+                <DispatchConsole />
+              </Suspense>
+            } />
+            {/* All other routes within Layout */}
+            <Route path="*" element={
+              <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
+                <Suspense fallback={<div className="p-6 text-zinc-300" data-testid="lazy-loading">Loading…</div>}>
+                  <Routes>
+                    <Route path="/" element={<Home addToCart={addToCart} />} />
+                    <Route path="/shop" element={<Home addToCart={addToCart} />} />
+                    <Route path="/product/:productId" element={<ProductDetail addToCart={addToCart} />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+                    <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                  </Routes>
+                </Suspense>
+              </Layout>
+            } />
+          </Routes>
         </ErrorBoundary>
       </BrowserRouter>
     </div>
