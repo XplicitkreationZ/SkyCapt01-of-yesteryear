@@ -17,19 +17,14 @@ from urllib.request import urlopen
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
 app = FastAPI()
 app.add_middleware(GZipMiddleware, minimum_size=500)
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# ---------- Models ----------
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -45,7 +40,7 @@ class Product(BaseModel):
     name: str
     description: Optional[str] = ""
     price: float
-    category: Optional[str] = None  # Consumable, Accessory
+    category: Optional[str] = None
     brand: Optional[str] = None
     strain_type: Optional[str] = None
     size: Optional[str] = None
@@ -76,7 +71,7 @@ class Address(BaseModel):
     city: str
     state: str
     zip: str
-    dob: str  # YYYY-MM-DD
+    dob: str
 
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -120,14 +115,12 @@ class DeliveryQuoteResponse(BaseModel):
     reason: Optional[str] = None
     distance_miles: Optional[float] = None
 
-# ---------- Delivery Policy (Austin 78751 + 40mi radius) ----------
 ORIGIN_ZIP = "78751"
 ORIGIN_LAT = 30.318
 ORIGIN_LON = -97.724
 MAX_RADIUS_MI = 40.0
 DISTANCE_BANDS = [ (10.0, 7.0, 25.0, "0-10mi"), (25.0, 12.0, 50.0, "10-25mi"), (40.0, 18.0, 75.0, "25-40mi") ]
 
-# ---------- Helpers ----------
 def haversine_miles(lat1, lon1, lat2, lon2):
     R = 3958.8
     p1, p2 = math.radians(lat1), math.radians(lat2)
@@ -147,7 +140,6 @@ def geocode_zip(zip_code: str):
     except Exception:
         return None
 
-# ---------- Routes ----------
 @api_router.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -164,22 +156,6 @@ async def ready():
     except Exception as e:
         return {"status": "degraded", "mongo": False, "error": str(e)}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_obj = StatusCheck(**input.model_dump())
-    doc = status_obj.model_dump(); doc['timestamp'] = doc['timestamp'].isoformat()
-    await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    return status_checks
-
-# ----- Products CRUD -----
 @api_router.post("/products", response_model=Product)
 async def create_product(payload: ProductCreate):
     product = Product(**payload.model_dump())
@@ -189,7 +165,7 @@ async def create_product(payload: ProductCreate):
 
 @api_router.get("/products", response_model=List[Product])
 async def list_products():
-    products = await db.products.find({}, {"_id": 0}).to_list(200)
+    products = await db.products.find({}, {"_id": 0}).to_list(400)
     for p in products:
         if isinstance(p.get('created_at'), str):
             p['created_at'] = datetime.fromisoformat(p['created_at'])
@@ -211,7 +187,6 @@ async def delete_product(product_id: str):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"ok": True}
 
-# ----- Delivery quote & orders (Austin radius) -----
 @api_router.post("/delivery/quote", response_model=DeliveryQuoteResponse)
 async def delivery_quote(payload: DeliveryQuoteRequest):
     geo = geocode_zip(payload.zip)
@@ -248,7 +223,7 @@ async def create_delivery_order(payload: OrderDeliveryCreate):
     if payload.address.state.upper() != 'TX':
         raise HTTPException(status_code=400, detail="Texas only")
     ids = [i.product_id for i in payload.items]
-    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(200)
+    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(400)
     price_map = {p['id']: p['price'] for p in found}
     subtotal = 0.0
     for it in payload.items:
@@ -285,26 +260,60 @@ async def update_order_status(order_id: str, payload: StatusUpdate):
         raise HTTPException(status_code=404, detail="Order not found")
     return {"ok": True}
 
-@api_router.get("/config/tiers")
-async def get_tiers():
-    return {
-        "origin_zip": ORIGIN_ZIP,
-        "origin_lat": ORIGIN_LAT,
-        "origin_lon": ORIGIN_LON,
-        "max_radius_miles": MAX_RADIUS_MI,
-        "bands": [ {"max_miles": m, "fee": fee, "min_order": mo, "name": name} for (m, fee, mo, name) in DISTANCE_BANDS ]
-    }
+@api_router.post("/admin/seed-accessories")
+async def seed_accessories():
+    items = [
+        {"name": "RAW Classic Rolling Papers 1 1/4", "price": 2.49, "category": "Accessory", "brand": "RAW", "size": "1 1/4", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/bs8mxi93_raw-classic-rolling-papers-single-pack-1-1-4_600x.jpg"},
+        {"name": "Blazy Susan Rose Wraps (2ct)", "price": 2.99, "category": "Accessory", "brand": "Blazy Susan", "size": "2 wraps", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/kgy6p2eg_Blazy-Susan-Rose-Wraps_600x.jpg"},
+        {"name": "RAW Classic King Size Cones (single)", "price": 1.99, "category": "Accessory", "brand": "RAW", "size": "King Size", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/hlaimnsk_R_Cone_Class_King_sm_grande_7f6d341b-e5ed-4b3e-9e2b-e2f538a05f7a_600x.jpg"},
+        {"name": "RAW Black King Size Cones (single)", "price": 2.29, "category": "Accessory", "brand": "RAW", "size": "King Size", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/kws0id3i_hpxo04iufzovyrucokjo_936f64fe-73bd-40d7-9420-e0c3da133e0f_600x.jpg"},
+        {"name": "4-Part Aluminum Herb Grinder (Black)", "price": 19.99, "category": "Accessory", "brand": "Generic", "size": "2.2in", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/0q6wfz3k_4_parts_dry_herb_grinder_black_5000x.jpg"},
+    ]
+    inserted = 0
+    for s in items:
+        res = await db.products.update_one({"name": s["name"]}, {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
+        if res.upserted_id:
+            inserted += 1
+    return {"ok": True, "inserted": inserted}
 
-# ----- Sample data helpers -----
-STOCK_IMAGES = [
-    "https://images.unsplash.com/photo-1559558260-dfa522cfd57c",
-    "https://images.unsplash.com/photo-1518465444133-93542d08fdd9",
-    "https://images.unsplash.com/photo-1589141986943-5578615fdef2",
-]
+@api_router.post("/admin/seed-glass")
+async def seed_glass():
+    items = [
+        {"name": "Eyce Silicone Spoon Pipe (Smoke/Black)", "price": 24.99, "category": "Accessory", "brand": "Eyce", "size": "Spoon Pipe", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/cpqezmsu_eyce-silicone-spoon-pipe-smoke-black-hand-pipe-ey-ssp-sbk-14893882048586_edaedaf9-1847-45a3-a9e6-9faf901cf276_5000x.jpg"},
+        {"name": "Silicone Recycler Rig (Aqua)", "price": 69.99, "category": "Accessory", "brand": "Silicone", "size": "Recycler", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/384s134s_o3vjbksazu1ifbrh7vtj_600x.jpg"},
+        {"name": "Glass Round Base Bong 8\"", "price": 39.99, "category": "Accessory", "brand": "Glass", "size": "8\"", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/brmtuk2y_OxkdN58iVJ5DZAMfF0reW1vvj0y8bEvIUG9OJEHS_600x.jpg"},
+        {"name": "10\" Color Accented Beaker Bong (Blue)", "price": 49.99, "category": "Accessory", "brand": "Glass", "size": "10\"", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/z74xljmk_10BlueColorAccentedBeakerBong_5000x.png"},
+        {"name": "GRAV 14mm Male Octobowl", "price": 18.99, "category": "Accessory", "brand": "GRAV", "size": "14mm Male", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/it29p4xf_grav-r-14mm-male-octobowl.jpg"},
+    ]
+    inserted = 0
+    for s in items:
+        res = await db.products.update_one({"name": s["name"]}, {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
+        if res.upserted_id:
+            inserted += 1
+    return {"ok": True, "inserted": inserted}
 
-async def _insert_samples():
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def create_indexes():
+    try:
+        await db.products.create_index("id", unique=True)
+        await db.products.create_index([("category", 1), ("brand", 1)])
+        await db.products.create_index("name", unique=False)
+        await db.waitlist.create_index("email", unique=True)
+        await db.waitlist.create_index([("created_at", -1)])
+        await db.delivery_orders.create_index([("created_at", -1)])
+    except Exception as e:
+        logger.warning(f"Index creation issue: {e}")
+
+@api_router.post("/seed")
+async def seed_products():
+    existing = await db.products.count_documents({"category": {"$in": ["Consumable", None]}})
+    if existing > 0:
+        return {"skipped": True, "count": existing}
     samples = [
-        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": STOCK_IMAGES[1], "coa_url": "https://example.com/coa/blue-dream.pdf"},
+        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": "https://example.com/coa/blue-dream.pdf"},
         {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
     ]
     docs = []
@@ -314,64 +323,10 @@ async def _insert_samples():
         docs.append(d)
     if docs:
         await db.products.insert_many(docs)
-
-@api_router.post("/admin/seed-accessories")
-async def seed_accessories():
-    existing = await db.products.count_documents({"category": "Accessory"})
-    if existing > 0:
-        return {"skipped": True, "count": existing}
-    items = [
-        {"name": "RAW Classic Rolling Papers 1 1/4", "price": 2.49, "category": "Accessory", "brand": "RAW", "size": "1 1/4", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/bs8mxi93_raw-classic-rolling-papers-single-pack-1-1-4_600x.jpg"},
-        {"name": "Blazy Susan Rose Wraps (2ct)", "price": 2.99, "category": "Accessory", "brand": "Blazy Susan", "size": "2 wraps", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/kgy6p2eg_Blazy-Susan-Rose-Wraps_600x.jpg"},
-        {"name": "RAW Classic King Size Cones (single)", "price": 1.99, "category": "Accessory", "brand": "RAW", "size": "King Size", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/hlaimnsk_R_Cone_Class_King_sm_grande_7f6d341b-e5ed-4b3e-9e2b-e2f538a05f7a_600x.jpg"},
-        {"name": "RAW Black King Size Cones (single)", "price": 2.29, "category": "Accessory", "brand": "RAW", "size": "King Size", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/kws0id3i_hpxo04iufzovyrucokjo_936f64fe-73bd-40d7-9420-e0c3da133e0f_600x.jpg"},
-        {"name": "4-Part Aluminum Herb Grinder (Black)", "price": 19.99, "category": "Accessory", "brand": "Generic", "size": "2.2in", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/0q6wfz3k_4_parts_dry_herb_grinder_black_5000x.jpg"},
-    ]
-    docs = []
-    for s in items:
-        p = Product(**s)
-        d = p.model_dump(); d['created_at'] = d['created_at'].isoformat()
-        docs.append(d)
-    if docs:
-        await db.products.insert_many(docs)
-    return {"inserted": len(docs)}
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-@app.on_event("startup")
-async def create_indexes():
-    try:
-        await db.products.create_index("id", unique=True)
-        await db.products.create_index([("category", 1), ("brand", 1)])
-        await db.waitlist.create_index("email", unique=True)
-        await db.waitlist.create_index([("created_at", -1)])
-        await db.delivery_orders.create_index([("created_at", -1)])
-    except Exception as e:
-        logger.warning(f"Index creation issue: {e}")
-
-# ----- Seed sample products -----
-@api_router.post("/seed")
-async def seed_products():
-    existing = await db.products.count_documents({"category": {"$in": ["Consumable", None]}})
-    if existing > 0:
-        return {"skipped": True, "count": existing}
-    await _insert_samples()
     count = await db.products.count_documents({})
     return {"inserted": count}
 
-# ----- Admin: reset samples -----
-@api_router.post("/admin/reset-samples")
-async def reset_samples():
-    await db.products.delete_many({})
-    await _insert_samples()
-    count = await db.products.count_documents({})
-    return {"reset": True, "count": count}
-
-# Include the router in the main app
 app.include_router(api_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
