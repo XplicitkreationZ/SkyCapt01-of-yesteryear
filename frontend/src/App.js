@@ -19,6 +19,7 @@ const CartPage = lazy(() => import("@/pages/CartPage"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
 const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
+const DispatchConsole = lazy(() => import("@/pages/DispatchConsole"));
 const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
 const showBg = !isProd;
 
