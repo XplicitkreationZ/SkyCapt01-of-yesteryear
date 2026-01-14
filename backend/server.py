@@ -328,19 +328,19 @@ async def create_indexes():
 
 @api_router.post("/seed")
 async def seed_products():
-    # Update existing flower products to have Consumable category
+    # Update existing flower products to have Consumable category and Flower product_type
     await db.products.update_many(
-        {"strain_type": {"$exists": True, "$ne": None}},
-        {"$set": {"category": "Consumable"}}
+        {"strain_type": {"$exists": True, "$ne": None}, "product_type": {"$exists": False}},
+        {"$set": {"category": "Consumable", "product_type": "Flower"}}
     )
     
     samples = [
-        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": "https://example.com/coa/blue-dream.pdf"},
-        {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
-        {"name": "Pineapple Express 3.5g Flower Bag", "description": "Tropical sweetness meets energetic vibes.", "price": 32.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1603909223429-69bb7101f420", "coa_url": None},
-        {"name": "Wedding Cake 1g Gram Bag", "description": "Sweet vanilla with relaxing indica effects.", "price": 14.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1616690002498-c860238ceb42", "coa_url": None},
-        {"name": "Green Crack 3.5g Flower Bag", "description": "Sharp energy and focus with tangy mango flavor.", "price": 36.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Sativa", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1587754554670-2de5cc6e35de", "coa_url": None},
-        {"name": "Granddaddy Purple 1g Gram Bag", "description": "Deep relaxation with grape and berry notes.", "price": 13.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1585238342070-61e1e768b1ff", "coa_url": None},
+        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": "https://example.com/coa/blue-dream.pdf"},
+        {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
+        {"name": "Pineapple Express 3.5g Flower Bag", "description": "Tropical sweetness meets energetic vibes.", "price": 32.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1603909223429-69bb7101f420", "coa_url": None},
+        {"name": "Wedding Cake 1g Gram Bag", "description": "Sweet vanilla with relaxing indica effects.", "price": 14.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1616690002498-c860238ceb42", "coa_url": None},
+        {"name": "Green Crack 3.5g Flower Bag", "description": "Sharp energy and focus with tangy mango flavor.", "price": 36.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Sativa", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1587754554670-2de5cc6e35de", "coa_url": None},
+        {"name": "Granddaddy Purple 1g Gram Bag", "description": "Deep relaxation with grape and berry notes.", "price": 13.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1585238342070-61e1e768b1ff", "coa_url": None},
     ]
     
     inserted = 0
@@ -355,6 +355,54 @@ async def seed_products():
     
     count = await db.products.count_documents({"category": "Consumable"})
     return {"inserted": inserted, "total_consumables": count}
+
+@api_router.post("/admin/seed-prerolls")
+async def seed_prerolls():
+    items = [
+        {
+            "name": "Wazabi Hash Holes Double Drop (2x2g)", 
+            "description": "Premium exotic flower + rosin jelly pre-rolls. 2x2 grams of premium stuff. Multiple strains available including Fruit Punch (Sativa), Heavy Haze (Indica), Cherry Bomb (Hybrid), ZaZa Pop (Sativa), Watermelon Gelato (Hybrid), and Cheesecake (Indica).", 
+            "price": 45.00, 
+            "category": "Consumable", 
+            "product_type": "Pre-Roll",
+            "brand": "Wazabi", 
+            "strain_type": "Hybrid", 
+            "size": "4g (2x2g)", 
+            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/phizpo9n_WAZABIEXOTICS2GHASHHOLEDOUBLEDROPPREROLLS10PK6Mylar.png"
+        },
+        {
+            "name": "Flying Monkey THC-A Diamond Infused Pre-Rolls (4g)", 
+            "description": "42% THC-A indoor flower. 2x2 gram diamond infused pre-rolls. Available strains: Blue Dream (Sativa), Alaskan Thunder F*ck (Sativa), Cherry Zlushie (Hybrid), Fruity Pebblez (Sativa), Purple Punch (Hybrid), Gelato 41 (Indica), Grape OG (Indica), Kush Berry (Indica).", 
+            "price": 55.00, 
+            "category": "Consumable", 
+            "product_type": "Pre-Roll",
+            "brand": "Flying Monkey", 
+            "strain_type": "Hybrid", 
+            "size": "4g (2x2g)", 
+            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/vcuq739a_Flyer-50-monkey.jpg"
+        },
+        {
+            "name": "Wazabi Ice on Fire Liquid Diamond Pre-Rolls (6g)", 
+            "description": "3X liquid diamond infused pre-rolls. 3x2 grams of premium quality. Strains: Banana Kush (Hybrid), Frooty B (Sativa), Sour Gushers (Hybrid), Netflix N' Chill (Indica), Snapdragon (Sativa), Ice Cream Melt (Indica).", 
+            "price": 65.00, 
+            "category": "Consumable", 
+            "product_type": "Pre-Roll",
+            "brand": "Wazabi", 
+            "strain_type": "Hybrid", 
+            "size": "6g (3x2g)", 
+            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/vhpyvijl_5091843164.jpg"
+        },
+    ]
+    inserted = 0
+    for s in items:
+        res = await db.products.update_one(
+            {"name": s["name"]}, 
+            {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, 
+            upsert=True
+        )
+        if res.upserted_id:
+            inserted += 1
+    return {"ok": True, "inserted": inserted}
 
 app.include_router(api_router)
 app.add_middleware(
