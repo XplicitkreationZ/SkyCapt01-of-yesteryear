@@ -47,6 +47,7 @@ class Product(BaseModel):
     size: Optional[str] = None
     image_url: Optional[str] = None
     coa_url: Optional[str] = None
+    variants: Optional[list] = None  # List of variant options (e.g., strain choices)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
@@ -60,6 +61,7 @@ class ProductCreate(BaseModel):
     size: Optional[str] = None
     image_url: Optional[str] = None
     coa_url: Optional[str] = None
+    variants: Optional[list] = None
 
 class CartItem(BaseModel):
     product_id: str
