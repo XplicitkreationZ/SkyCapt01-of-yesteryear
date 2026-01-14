@@ -114,18 +114,27 @@ const CATEGORIES = [
   { id: 'Nitrous', label: 'Nitrous', icon: '⚡' },
 ];
 
+const STRAIN_TYPES = [
+  { id: 'all', label: 'All Strains', color: 'bg-zinc-600' },
+  { id: 'Hybrid', label: 'Hybrid', color: 'bg-purple-500' },
+  { id: 'Sativa', label: 'Sativa', color: 'bg-orange-500' },
+  { id: 'Indica', label: 'Indica', color: 'bg-indigo-500' },
+];
+
 const Catalog = ({ addToCart }) => {
   const { items, loading, error } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeStrain, setActiveStrain] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredItems = items.filter(p => {
     const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
+    const matchesStrain = activeStrain === 'all' || p.strain_type === activeStrain;
     const matchesSearch = !searchQuery || 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.brand && p.brand.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesStrain && matchesSearch;
   });
 
   const categoryCounts = items.reduce((acc, p) => {
@@ -133,6 +142,21 @@ const Catalog = ({ addToCart }) => {
     acc[cat] = (acc[cat] || 0) + 1;
     return acc;
   }, { all: items.length });
+
+  const strainCounts = items.filter(p => p.category === 'Consumable').reduce((acc, p) => {
+    const strain = p.strain_type || 'Other';
+    acc[strain] = (acc[strain] || 0) + 1;
+    acc.all = (acc.all || 0) + 1;
+    return acc;
+  }, {});
+
+  // Reset strain filter when changing category
+  const handleCategoryChange = (catId) => {
+    setActiveCategory(catId);
+    if (catId !== 'Consumable') {
+      setActiveStrain('all');
+    }
+  };
 
   if (loading) return <p className="px-4 text-zinc-300" data-testid="catalog-loading">Loading…</p>;
   if (error) return <p className="px-4 text-red-300" data-testid="catalog-error">{error}</p>;
@@ -167,11 +191,11 @@ const Catalog = ({ addToCart }) => {
       </div>
 
       {/* Category Filter Tabs */}
-      <div className="flex flex-wrap gap-2 mb-8" data-testid="category-filters">
+      <div className="flex flex-wrap gap-2 mb-4" data-testid="category-filters">
         {CATEGORIES.map(cat => (
           <button
             key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
+            onClick={() => handleCategoryChange(cat.id)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
               activeCategory === cat.id
                 ? 'bg-emerald-500 text-black'
