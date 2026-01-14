@@ -344,7 +344,7 @@ export default function DispatchConsole() {
                             className="bg-emerald-500 hover:bg-emerald-400 text-black font-medium"
                             data-testid={`advance-${order.id}`}
                           >
-                            {STATUS_CONFIG[nextStatus].label}
+                            → {STATUS_CONFIG[nextStatus].label}
                           </Button>
                         )}
                         {order.status !== 'delivered' && order.status !== 'cancelled' && (
