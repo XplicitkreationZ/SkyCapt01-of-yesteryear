@@ -214,12 +214,42 @@ const Catalog = ({ addToCart }) => {
         ))}
       </div>
 
+      {/* Strain Sub-Filter (only shows when Consumables is selected) */}
+      {activeCategory === 'Consumable' && (
+        <div className="flex flex-wrap gap-2 mb-6 pl-4 border-l-2 border-emerald-500/30" data-testid="strain-filters">
+          <span className="text-zinc-400 text-sm self-center mr-2">Strain:</span>
+          {STRAIN_TYPES.map(strain => (
+            <button
+              key={strain.id}
+              onClick={() => setActiveStrain(strain.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-2 ${
+                activeStrain === strain.id
+                  ? `${strain.color} text-white`
+                  : 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-700/40 border border-zinc-700'
+              }`}
+              data-testid={`strain-${strain.id}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${strain.color}`}></span>
+              <span>{strain.label}</span>
+              {strainCounts[strain.id] > 0 && (
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                  activeStrain === strain.id ? 'bg-white/20' : 'bg-zinc-700'
+                }`}>
+                  {strainCounts[strain.id] || 0}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Results Count */}
-      {(searchQuery || activeCategory !== 'all') && (
+      {(searchQuery || activeCategory !== 'all' || activeStrain !== 'all') && (
         <p className="text-zinc-400 text-sm mb-4" data-testid="results-count">
           Showing {filteredItems.length} {filteredItems.length === 1 ? 'product' : 'products'}
           {searchQuery && ` for "${searchQuery}"`}
           {activeCategory !== 'all' && ` in ${activeCategory}`}
+          {activeStrain !== 'all' && ` (${activeStrain})`}
         </p>
       )}
 
