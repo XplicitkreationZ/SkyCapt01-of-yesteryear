@@ -18,6 +18,7 @@ const About = lazy(() => import("@/pages/About"));
 const CartPage = lazy(() => import("@/pages/CartPage"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
 const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
+const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
 const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
 const showBg = !isProd;
 
@@ -114,18 +115,18 @@ const Catalog = ({ addToCart }) => {
       <h2 className="text-2xl text-white mb-6">Our Products</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map(p=> (
-          <Card key={p.id} className="bg-zinc-950/70 border-emerald-500/30 hover:border-emerald-400/60 transition-colors" data-testid={`product-card-${p.id}`}>
+          <Card key={p.id} className="bg-zinc-950/70 border-emerald-500/30 hover:border-emerald-400/60 transition-colors group" data-testid={`product-card-${p.id}`}>
             <CardHeader><CardTitle className="text-white text-lg">{p.name}</CardTitle></CardHeader>
             <CardContent>
-              <div className="relative">
-                <img alt={p.name} src={p.image_url} className="h-40 w-full object-cover rounded-md mb-3"/>
+              <Link to={`/product/${p.id}`} className="block relative cursor-pointer">
+                <img alt={p.name} src={p.image_url} className="h-40 w-full object-contain rounded-md mb-3 group-hover:scale-105 transition-transform"/>
                 <ProductLabel name={(p.brand||p.name).split(" ")[0]} size={p.size || p.category} />
-              </div>
+              </Link>
               <p className="text-emerald-300 text-sm">{p.category ? `${p.category}${p.brand? ' · '+p.brand:''}` : `${p.strain_type || ''}${p.size? ' · '+p.size:''}`}</p>
               <p className="text-zinc-300 text-sm mt-2 line-clamp-2">{p.description}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-white font-semibold">${p.price.toFixed(2)}</span>
-                <Button data-testid={`add-to-cart-${p.id}`} onClick={()=> addToCart(p)} className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Add to cart</Button>
+                <Button data-testid={`add-to-cart-${p.id}`} onClick={(e)=> { e.stopPropagation(); addToCart(p); }} className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Add to cart</Button>
               </div>
             </CardContent>
           </Card>
@@ -167,6 +168,8 @@ export default function App() {
             <Suspense fallback={<div className="p-6 text-zinc-300" data-testid="lazy-loading">Loading…</div>}>
               <Routes>
                 <Route path="/" element={<Home addToCart={addToCart} />} />
+                <Route path="/shop" element={<Home addToCart={addToCart} />} />
+                <Route path="/product/:productId" element={<ProductDetail addToCart={addToCart} />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
