@@ -407,7 +407,7 @@ async def seed_prerolls():
         {
             "name": "Wazabi Hash Holes Double Drop (2x2g)", 
             "description": "Premium exotic flower + rosin jelly pre-rolls. 2x2 grams of premium stuff. Choose your strain below.", 
-            "price": 45.00, 
+            "price": 18.95, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Wazabi", 
@@ -426,7 +426,7 @@ async def seed_prerolls():
         {
             "name": "Flying Monkey THC-A Diamond Infused Pre-Rolls (4g)", 
             "description": "42% THC-A indoor flower. 2x2 gram diamond infused pre-rolls. Choose your strain below.", 
-            "price": 55.00, 
+            "price": 18.95, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Flying Monkey", 
@@ -447,7 +447,7 @@ async def seed_prerolls():
         {
             "name": "Wazabi Ice on Fire Liquid Diamond Pre-Rolls (6g)", 
             "description": "3X liquid diamond infused pre-rolls. 3x2 grams of premium quality. Choose your strain below.", 
-            "price": 65.00, 
+            "price": 25.00, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Wazabi", 
