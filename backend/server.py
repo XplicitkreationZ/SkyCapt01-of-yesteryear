@@ -363,36 +363,62 @@ async def seed_prerolls():
     items = [
         {
             "name": "Wazabi Hash Holes Double Drop (2x2g)", 
-            "description": "Premium exotic flower + rosin jelly pre-rolls. 2x2 grams of premium stuff. Multiple strains available including Fruit Punch (Sativa), Heavy Haze (Indica), Cherry Bomb (Hybrid), ZaZa Pop (Sativa), Watermelon Gelato (Hybrid), and Cheesecake (Indica).", 
+            "description": "Premium exotic flower + rosin jelly pre-rolls. 2x2 grams of premium stuff. Choose your strain below.", 
             "price": 45.00, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Wazabi", 
             "strain_type": "Hybrid", 
             "size": "4g (2x2g)", 
-            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/phizpo9n_WAZABIEXOTICS2GHASHHOLEDOUBLEDROPPREROLLS10PK6Mylar.png"
+            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/phizpo9n_WAZABIEXOTICS2GHASHHOLEDOUBLEDROPPREROLLS10PK6Mylar.png",
+            "variants": [
+                {"name": "Fruit Punch", "type": "Sativa"},
+                {"name": "Heavy Haze", "type": "Indica"},
+                {"name": "Cherry Bomb", "type": "Hybrid"},
+                {"name": "ZaZa Pop", "type": "Sativa"},
+                {"name": "Watermelon Gelato", "type": "Hybrid"},
+                {"name": "Cheesecake", "type": "Indica"}
+            ]
         },
         {
             "name": "Flying Monkey THC-A Diamond Infused Pre-Rolls (4g)", 
-            "description": "42% THC-A indoor flower. 2x2 gram diamond infused pre-rolls. Available strains: Blue Dream (Sativa), Alaskan Thunder F*ck (Sativa), Cherry Zlushie (Hybrid), Fruity Pebblez (Sativa), Purple Punch (Hybrid), Gelato 41 (Indica), Grape OG (Indica), Kush Berry (Indica).", 
+            "description": "42% THC-A indoor flower. 2x2 gram diamond infused pre-rolls. Choose your strain below.", 
             "price": 55.00, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Flying Monkey", 
             "strain_type": "Hybrid", 
             "size": "4g (2x2g)", 
-            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/vcuq739a_Flyer-50-monkey.jpg"
+            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/vcuq739a_Flyer-50-monkey.jpg",
+            "variants": [
+                {"name": "Blue Dream", "type": "Sativa"},
+                {"name": "Alaskan Thunder F*ck", "type": "Sativa"},
+                {"name": "Cherry Zlushie", "type": "Hybrid"},
+                {"name": "Fruity Pebblez", "type": "Sativa"},
+                {"name": "Purple Punch", "type": "Hybrid"},
+                {"name": "Gelato 41", "type": "Indica"},
+                {"name": "Grape OG", "type": "Indica"},
+                {"name": "Kush Berry", "type": "Indica"}
+            ]
         },
         {
             "name": "Wazabi Ice on Fire Liquid Diamond Pre-Rolls (6g)", 
-            "description": "3X liquid diamond infused pre-rolls. 3x2 grams of premium quality. Strains: Banana Kush (Hybrid), Frooty B (Sativa), Sour Gushers (Hybrid), Netflix N' Chill (Indica), Snapdragon (Sativa), Ice Cream Melt (Indica).", 
+            "description": "3X liquid diamond infused pre-rolls. 3x2 grams of premium quality. Choose your strain below.", 
             "price": 65.00, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Wazabi", 
             "strain_type": "Hybrid", 
             "size": "6g (3x2g)", 
-            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/vhpyvijl_5091843164.jpg"
+            "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/vhpyvijl_5091843164.jpg",
+            "variants": [
+                {"name": "Banana Kush", "type": "Hybrid"},
+                {"name": "Frooty B", "type": "Sativa"},
+                {"name": "Sour Gushers", "type": "Hybrid"},
+                {"name": "Netflix N' Chill", "type": "Indica"},
+                {"name": "Snapdragon", "type": "Sativa"},
+                {"name": "Ice Cream Melt", "type": "Indica"}
+            ]
         },
     ]
     inserted = 0
