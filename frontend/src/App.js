@@ -382,6 +382,7 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                <Route path="/admin" element={<DispatchConsole />} />
               </Routes>
             </Suspense>
           </Layout>
