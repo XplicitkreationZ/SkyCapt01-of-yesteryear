@@ -45,6 +45,8 @@ class Product(BaseModel):
     name: str
     description: Optional[str] = ""
     price: float
+    category: Optional[str] = None  # Consumable, Accessory
+    brand: Optional[str] = None
     strain_type: Optional[str] = None
     size: Optional[str] = None
     image_url: Optional[str] = None
@@ -55,6 +57,8 @@ class ProductCreate(BaseModel):
     name: str
     description: Optional[str] = ""
     price: float
+    category: Optional[str] = None
+    brand: Optional[str] = None
     strain_type: Optional[str] = None
     size: Optional[str] = None
     image_url: Optional[str] = None
@@ -116,17 +120,12 @@ class DeliveryQuoteResponse(BaseModel):
     reason: Optional[str] = None
     distance_miles: Optional[float] = None
 
-# ---------- Delivery Policy (Austin 78751 + 40mi radius, 24/7) ----------
+# ---------- Delivery Policy (Austin 78751 + 40mi radius) ----------
 ORIGIN_ZIP = "78751"
 ORIGIN_LAT = 30.318
 ORIGIN_LON = -97.724
 MAX_RADIUS_MI = 40.0
-# Distance bands: (max_miles, fee, min_order, name)
-DISTANCE_BANDS = [
-    (10.0, 7.0, 25.0, "0-10mi"),
-    (25.0, 12.0, 50.0, "10-25mi"),
-    (40.0, 18.0, 75.0, "25-40mi"),
-]
+DISTANCE_BANDS = [ (10.0, 7.0, 25.0, "0-10mi"), (25.0, 12.0, 50.0, "10-25mi"), (40.0, 18.0, 75.0, "25-40mi") ]
 
 # ---------- Helpers ----------
 def haversine_miles(lat1, lon1, lat2, lon2):
@@ -142,8 +141,7 @@ def geocode_zip(zip_code: str):
         with urlopen(f"https://api.zippopotam.us/us/{zip_code}", timeout=5) as f:
             data = json.loads(f.read().decode("utf-8"))
             place = data["places"][0]
-            lat = float(place["latitude"])
-            lon = float(place["longitude"])
+            lat = float(place["latitude"]); lon = float(place["longitude"])
             state = data.get("state abbreviation") or place.get("state abbreviation")
             return lat, lon, (state or "")
     except Exception:
@@ -169,8 +167,7 @@ async def ready():
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
     status_obj = StatusCheck(**input.model_dump())
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    doc = status_obj.model_dump(); doc['timestamp'] = doc['timestamp'].isoformat()
     await db.status_checks.insert_one(doc)
     return status_obj
 
@@ -186,14 +183,13 @@ async def get_status_checks():
 @api_router.post("/products", response_model=Product)
 async def create_product(payload: ProductCreate):
     product = Product(**payload.model_dump())
-    doc = product.model_dump()
-    doc['created_at'] = doc['created_at'].isoformat()
+    doc = product.model_dump(); doc['created_at'] = doc['created_at'].isoformat()
     await db.products.insert_one(doc)
     return product
 
 @api_router.get("/products", response_model=List[Product])
 async def list_products():
-    products = await db.products.find({}, {"_id": 0}).to_list(100)
+    products = await db.products.find({}, {"_id": 0}).to_list(200)
     for p in products:
         if isinstance(p.get('created_at'), str):
             p['created_at'] = datetime.fromisoformat(p['created_at'])
@@ -215,25 +211,6 @@ async def delete_product(product_id: str):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"ok": True}
 
-# ----- Mock checkout (legacy) -----
-@api_router.post("/orders", response_model=Order)
-async def create_order(items: List[CartItem], email: Optional[str] = None):
-    ids = [i.product_id for i in items]
-    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(100)
-    price_map = {p['id']: p['price'] for p in found}
-    subtotal = 0.0
-    for it in items:
-        price = price_map.get(it.product_id)
-        if price is None:
-            raise HTTPException(status_code=400, detail=f"Invalid product {it.product_id}")
-        subtotal += price * it.quantity
-    tax = round(subtotal * 0.0, 2)
-    total = round(subtotal + tax, 2)
-    order = Order(items=items, subtotal=round(subtotal,2), tax=tax, total=total, email=email)
-    doc = order.model_dump(); doc['created_at'] = doc['created_at'].isoformat()
-    await db.orders.insert_one(doc)
-    return order
-
 # ----- Delivery quote & orders (Austin radius) -----
 @api_router.post("/delivery/quote", response_model=DeliveryQuoteResponse)
 async def delivery_quote(payload: DeliveryQuoteRequest):
@@ -246,7 +223,6 @@ async def delivery_quote(payload: DeliveryQuoteRequest):
     dist = haversine_miles(ORIGIN_LAT, ORIGIN_LON, lat, lon)
     if dist > MAX_RADIUS_MI:
         return DeliveryQuoteResponse(allowed=False, fee=0.0, min_order=0.0, reason="Outside 40mi radius", distance_miles=round(dist,2))
-    # pick band
     band = None
     for m, fee, mo, name in DISTANCE_BANDS:
         if dist <= m:
@@ -272,7 +248,7 @@ async def create_delivery_order(payload: OrderDeliveryCreate):
     if payload.address.state.upper() != 'TX':
         raise HTTPException(status_code=400, detail="Texas only")
     ids = [i.product_id for i in payload.items]
-    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(100)
+    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(200)
     price_map = {p['id']: p['price'] for p in found}
     subtotal = 0.0
     for it in payload.items:
@@ -316,10 +292,7 @@ async def get_tiers():
         "origin_lat": ORIGIN_LAT,
         "origin_lon": ORIGIN_LON,
         "max_radius_miles": MAX_RADIUS_MI,
-        "bands": [
-            {"max_miles": m, "fee": fee, "min_order": mo, "name": name}
-            for (m, fee, mo, name) in DISTANCE_BANDS
-        ]
+        "bands": [ {"max_miles": m, "fee": fee, "min_order": mo, "name": name} for (m, fee, mo, name) in DISTANCE_BANDS ]
     }
 
 # ----- Sample data helpers -----
@@ -331,10 +304,8 @@ STOCK_IMAGES = [
 
 async def _insert_samples():
     samples = [
-        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "strain_type": "Hybrid", "size": "3.5g", "image_url": STOCK_IMAGES[1], "coa_url": "https://example.com/coa/blue-dream.pdf"},
-        {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
-        {"name": "Pineapple Express 3.5g Flower Bag", "description": "Tropical sweetness meets energetic vibes.", "price": 32.00, "strain_type": "Hybrid", "size": "3.5g", "image_url": STOCK_IMAGES[2], "coa_url": "https://example.com/coa/pineapple-express.pdf"},
-        {"name": "Wedding Cake 1g Gram Bag", "description": "Frosted vanilla gas in a compact single.", "price": 13.00, "strain_type": "Indica", "size": "1g", "image_url": STOCK_IMAGES[0], "coa_url": "https://example.com/coa/wedding-cake.pdf"},
+        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": STOCK_IMAGES[1], "coa_url": "https://example.com/coa/blue-dream.pdf"},
+        {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
     ]
     docs = []
     for s in samples:
@@ -344,6 +315,27 @@ async def _insert_samples():
     if docs:
         await db.products.insert_many(docs)
 
+@api_router.post("/admin/seed-accessories")
+async def seed_accessories():
+    existing = await db.products.count_documents({"category": "Accessory"})
+    if existing > 0:
+        return {"skipped": True, "count": existing}
+    items = [
+        {"name": "RAW Classic Rolling Papers 1 1/4", "price": 2.49, "category": "Accessory", "brand": "RAW", "size": "1 1/4", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/bs8mxi93_raw-classic-rolling-papers-single-pack-1-1-4_600x.jpg"},
+        {"name": "Blazy Susan Rose Wraps (2ct)", "price": 2.99, "category": "Accessory", "brand": "Blazy Susan", "size": "2 wraps", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/kgy6p2eg_Blazy-Susan-Rose-Wraps_600x.jpg"},
+        {"name": "RAW Classic King Size Cones (single)", "price": 1.99, "category": "Accessory", "brand": "RAW", "size": "King Size", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/hlaimnsk_R_Cone_Class_King_sm_grande_7f6d341b-e5ed-4b3e-9e2b-e2f538a05f7a_600x.jpg"},
+        {"name": "RAW Black King Size Cones (single)", "price": 2.29, "category": "Accessory", "brand": "RAW", "size": "King Size", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/kws0id3i_hpxo04iufzovyrucokjo_936f64fe-73bd-40d7-9420-e0c3da133e0f_600x.jpg"},
+        {"name": "4-Part Aluminum Herb Grinder (Black)", "price": 19.99, "category": "Accessory", "brand": "Generic", "size": "2.2in", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/0q6wfz3k_4_parts_dry_herb_grinder_black_5000x.jpg"},
+    ]
+    docs = []
+    for s in items:
+        p = Product(**s)
+        d = p.model_dump(); d['created_at'] = d['created_at'].isoformat()
+        docs.append(d)
+    if docs:
+        await db.products.insert_many(docs)
+    return {"inserted": len(docs)}
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -352,6 +344,7 @@ logger = logging.getLogger(__name__)
 async def create_indexes():
     try:
         await db.products.create_index("id", unique=True)
+        await db.products.create_index([("category", 1), ("brand", 1)])
         await db.waitlist.create_index("email", unique=True)
         await db.waitlist.create_index([("created_at", -1)])
         await db.delivery_orders.create_index([("created_at", -1)])
@@ -361,14 +354,14 @@ async def create_indexes():
 # ----- Seed sample products -----
 @api_router.post("/seed")
 async def seed_products():
-    existing = await db.products.count_documents({})
+    existing = await db.products.count_documents({"category": {"$in": ["Consumable", None]}})
     if existing > 0:
         return {"skipped": True, "count": existing}
     await _insert_samples()
     count = await db.products.count_documents({})
     return {"inserted": count}
 
-# ----- Admin: reset samples (dev utility) -----
+# ----- Admin: reset samples -----
 @api_router.post("/admin/reset-samples")
 async def reset_samples():
     await db.products.delete_many({})

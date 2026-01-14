@@ -98,6 +98,7 @@ function useProducts() {
     (async ()=>{
       try {
         await axios.post(`${API}/seed`);
+        await axios.post(`${API}/admin/seed-accessories`);
         const { data } = await axios.get(`${API}/products`);
         setItems(data);
       } catch (e) {
@@ -170,36 +171,6 @@ const Catalog = ({ addToCart }) => {
     <section id="products" className="max-w-6xl mx-auto px-4 py-10" data-testid="catalog-grid">
       <h2 className="text-2xl text-white mb-6">Our Products</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="bg-zinc-950/70 border-emerald-500/30">
-          <CardHeader><CardTitle className="text-white">Prerolls</CardTitle></CardHeader>
-          <CardContent>
-            <div className="relative">
-              <img alt="prerolls" src={HERO_IMAGES.preroll1} className="h-40 w-full object-cover rounded-md mb-3"/>
-              <ProductLabel name="Prerolls" size="2g" />
-            </div>
-            <p className="text-zinc-300 text-sm">Smooth burn, bold terp profile.</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-zinc-950/70 border-emerald-500/30">
-          <CardHeader><CardTitle className="text-white">Flower Buds</CardTitle></CardHeader>
-          <CardContent>
-            <div className="relative">
-              <img alt="buds" src={HERO_IMAGES.budsPile} className="h-40 w-full object-cover rounded-md mb-3"/>
-              <ProductLabel name="Craft Flower" size="3.5g" />
-            </div>
-            <p className="text-zinc-300 text-sm">Trichome-rich, hand selected.</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-zinc-950/70 border-emerald-500/30">
-          <CardHeader><CardTitle className="text-white">Jar Reserve</CardTitle></CardHeader>
-          <CardContent>
-            <div className="relative">
-              <img alt="jar" src={HERO_IMAGES.jarBuds} className="h-40 w-full object-cover rounded-md mb-3"/>
-              <ProductLabel name="Jar Reserve" size="7g" />
-            </div>
-            <p className="text-zinc-300 text-sm">Fresh-sealed, curated batches.</p>
-          </CardContent>
-        </Card>
         {items.map(p=> (
           <Card key={p.id} className="bg-zinc-950/70 border-emerald-500/30 hover:border-emerald-400/60 transition-colors" data-testid={`product-card-${p.id}`}>
             <CardHeader>
@@ -208,9 +179,9 @@ const Catalog = ({ addToCart }) => {
             <CardContent>
               <div className="relative">
                 <img alt={p.name} src={p.image_url} className="h-40 w-full object-cover rounded-md mb-3"/>
-                <ProductLabel name={p.name.split(" ")[0]} size={p.size} />
+                <ProductLabel name={(p.brand||p.name).split(" ")[0]} size={p.size || p.category} />
               </div>
-              <p className="text-emerald-300 text-sm">{p.strain_type} · {p.size}</p>
+              <p className="text-emerald-300 text-sm">{p.category ? `${p.category}${p.brand? ' · '+p.brand:''}` : `${p.strain_type || ''}${p.size? ' · '+p.size:''}`}</p>
               <p className="text-zinc-300 text-sm mt-2 line-clamp-2">{p.description}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-white font-semibold">${p.price.toFixed(2)}</span>
