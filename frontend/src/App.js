@@ -113,6 +113,7 @@ const Hero = () => { return null };
 const CATEGORIES = [
   { id: 'all', label: 'All Products', icon: '🛒' },
   { id: 'Consumable', label: 'Consumables', icon: '🌿' },
+  { id: 'Kratom', label: 'Kratom', icon: '🍃' },
   { id: 'Accessory', label: 'Accessories', icon: '📦' },
   { id: 'Glass', label: 'Glass', icon: '🔮' },
   { id: 'Nitrous', label: 'Nitrous', icon: '⚡' },
