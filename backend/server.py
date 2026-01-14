@@ -379,13 +379,17 @@ async def seed_products():
         {"$set": {"category": "Consumable", "product_type": "Flower"}}
     )
     
+    # Remove Granddaddy Purple
+    await db.products.delete_many({"name": "Granddaddy Purple 1g Gram Bag"})
+    
     samples = [
-        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": "https://example.com/coa/blue-dream.pdf"},
-        {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
-        {"name": "Pineapple Express 3.5g Flower Bag", "description": "Tropical sweetness meets energetic vibes.", "price": 32.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1603909223429-69bb7101f420", "coa_url": None},
-        {"name": "Wedding Cake 1g Gram Bag", "description": "Sweet vanilla with relaxing indica effects.", "price": 14.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1616690002498-c860238ceb42", "coa_url": None},
-        {"name": "Green Crack 3.5g Flower Bag", "description": "Sharp energy and focus with tangy mango flavor.", "price": 36.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Sativa", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1587754554670-2de5cc6e35de", "coa_url": None},
-        {"name": "Granddaddy Purple 1g Gram Bag", "description": "Deep relaxation with grape and berry notes.", "price": 13.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1585238342070-61e1e768b1ff", "coa_url": None},
+        {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 60.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": "https://example.com/coa/blue-dream.pdf"},
+        {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 15.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
+        {"name": "Pineapple Express 3.5g Flower Bag", "description": "Tropical sweetness meets energetic vibes.", "price": 60.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1603909223429-69bb7101f420", "coa_url": None},
+        {"name": "Wedding Cake 1g Gram Bag", "description": "Sweet vanilla with relaxing indica effects.", "price": 15.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1616690002498-c860238ceb42", "coa_url": None},
+        {"name": "Green Crack 3.5g Flower Bag", "description": "Sharp energy and focus with tangy mango flavor.", "price": 60.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Sativa", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1587754554670-2de5cc6e35de", "coa_url": None},
+        {"name": "Blue Dream 7g Quarter Bag", "description": "Balanced uplift with berry notes. Quarter ounce fresh-sealed.", "price": 100.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "7g (Quarter)", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": None},
+        {"name": "Pineapple Express 7g Quarter Bag", "description": "Tropical sweetness meets energetic vibes. Quarter ounce.", "price": 100.00, "category": "Consumable", "product_type": "Flower", "brand": "Xplicit", "strain_type": "Hybrid", "size": "7g (Quarter)", "image_url": "https://images.unsplash.com/photo-1603909223429-69bb7101f420", "coa_url": None},
     ]
     
     inserted = 0
@@ -400,6 +404,20 @@ async def seed_products():
     
     count = await db.products.count_documents({"category": "Consumable"})
     return {"inserted": inserted, "total_consumables": count}
+
+@api_router.post("/admin/seed-kratom")
+async def seed_kratom():
+    items = [
+        {"name": "Kratom Green Maeng Da Pack", "price": 35.00, "category": "Kratom", "brand": "Premium", "size": "Pack", "description": "Premium Green Maeng Da kratom. Known for balanced energy and focus.", "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"},
+        {"name": "Kratom Red Bali Pack", "price": 35.00, "category": "Kratom", "brand": "Premium", "size": "Pack", "description": "Premium Red Bali kratom. Popular for relaxation and comfort.", "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"},
+        {"name": "Kratom White Borneo Pack", "price": 35.00, "category": "Kratom", "brand": "Premium", "size": "Pack", "description": "Premium White Borneo kratom. Known for clean energy and mood enhancement.", "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"},
+    ]
+    inserted = 0
+    for s in items:
+        res = await db.products.update_one({"name": s["name"]}, {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
+        if res.upserted_id:
+            inserted += 1
+    return {"ok": True, "inserted": inserted}
 
 @api_router.post("/admin/seed-prerolls")
 async def seed_prerolls():
