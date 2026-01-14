@@ -156,6 +156,54 @@ export default function ProductDetail({ addToCart }) {
             </div>
           )}
 
+          {/* Strain/Variant Selector */}
+          {product.variants && product.variants.length > 0 && (
+            <div className="mb-6 pb-6 border-b border-zinc-800" data-testid="variant-selector">
+              <label className="text-zinc-400 text-sm block mb-3">
+                Choose Your Strain: <span className="text-emerald-400">*Required</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {product.variants.map((variant, idx) => {
+                  const colors = STRAIN_COLORS[variant.type] || STRAIN_COLORS.Hybrid;
+                  const isSelected = selectedVariant?.name === variant.name;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedVariant(variant)}
+                      className={`relative px-3 py-2.5 rounded-lg text-left transition-all ${
+                        isSelected 
+                          ? `${colors.border} border-2 bg-zinc-800/80` 
+                          : 'border border-zinc-700 hover:border-zinc-500 bg-zinc-900/50'
+                      }`}
+                      data-testid={`variant-${variant.name.replace(/\s+/g, '-').toLowerCase()}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${colors.bg}`}></span>
+                          <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-zinc-300'}`}>
+                            {variant.name}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-emerald-400" />
+                        )}
+                      </div>
+                      <span className={`text-xs ${colors.text} ml-5`}>{variant.type}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedVariant && (
+                <p className="mt-3 text-sm text-zinc-400">
+                  Selected: <span className="text-white font-medium">{selectedVariant.name}</span>
+                  <span className={`ml-2 ${STRAIN_COLORS[selectedVariant.type]?.text || 'text-purple-400'}`}>
+                    ({selectedVariant.type})
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Quantity Selector */}
           <div className="mb-6" data-testid="quantity-selector">
             <label className="text-zinc-400 text-sm block mb-3">Quantity:</label>
