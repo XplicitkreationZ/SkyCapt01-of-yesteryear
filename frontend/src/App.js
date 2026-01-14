@@ -234,6 +234,35 @@ const Catalog = ({ addToCart }) => {
         ))}
       </div>
 
+      {/* Product Type Sub-Filter (only shows when Consumables is selected) */}
+      {activeCategory === 'Consumable' && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 pl-4 border-l-2 border-emerald-500/30" data-testid="product-type-filters">
+          <span className="text-zinc-400 text-sm mr-2">Type:</span>
+          {PRODUCT_TYPES.map(ptype => (
+            <button
+              key={ptype.id}
+              onClick={() => setActiveProductType(ptype.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-2 ${
+                activeProductType === ptype.id
+                  ? 'bg-emerald-500 text-black'
+                  : 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-700/40 border border-zinc-700'
+              }`}
+              data-testid={`ptype-${ptype.id}`}
+            >
+              <span>{ptype.icon}</span>
+              <span>{ptype.label}</span>
+              {productTypeCounts[ptype.id] > 0 && (
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                  activeProductType === ptype.id ? 'bg-black/20' : 'bg-zinc-700'
+                }`}>
+                  {productTypeCounts[ptype.id] || 0}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Strain Sub-Filter (only shows when Consumables is selected) */}
       {activeCategory === 'Consumable' && (
         <div className="flex flex-wrap gap-2 mb-6 pl-4 border-l-2 border-emerald-500/30" data-testid="strain-filters">
