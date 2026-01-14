@@ -23,12 +23,13 @@ E-commerce website for XplicitkreationZ that pivoted from a THCA flower store to
   - **Strain Sub-Filters** - Shows strain type (Hybrid/Sativa/Indica) with dynamic counts
   - **Search Bar** - Real-time search across product names, brands, descriptions
 - **Product Detail Pages** - Cloud Supply-style layout with:
-  - Large product images
+  - Large product images with category badge
   - Brand/category badges
   - Quantity selector
+  - **Variant/Strain Selector** - Color-coded strain options for pre-rolls (Hybrid/Sativa/Indica)
   - Add to Cart with dynamic pricing
   - Description and Product Details tabs
-  - Related products
+  - Related products section
 - **Shopping Cart** - Full cart functionality with quantity management
 - **Delivery Quote System** - Distance-based tiered fees:
   - 0-10mi: $7 fee, $25 minimum
