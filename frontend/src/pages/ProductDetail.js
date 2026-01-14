@@ -3,11 +3,18 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Minus, Plus, ShoppingCart } from "lucide-react";
+import { ChevronLeft, Minus, Plus, ShoppingCart, Check } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Strain type colors
+const STRAIN_COLORS = {
+  Hybrid: { bg: 'bg-purple-500', border: 'border-purple-500', text: 'text-purple-400' },
+  Sativa: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-400' },
+  Indica: { bg: 'bg-indigo-500', border: 'border-indigo-500', text: 'text-indigo-400' },
+};
 
 export default function ProductDetail({ addToCart }) {
   const { productId } = useParams();
@@ -15,6 +22,7 @@ export default function ProductDetail({ addToCart }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
@@ -22,6 +30,10 @@ export default function ProductDetail({ addToCart }) {
       try {
         const { data } = await axios.get(`${API}/products/${productId}`);
         setProduct(data);
+        // Auto-select first variant if available
+        if (data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0]);
+        }
         
         // Fetch related products from same category
         const allProducts = await axios.get(`${API}/products`);
@@ -39,10 +51,16 @@ export default function ProductDetail({ addToCart }) {
   }, [productId]);
 
   const handleAddToCart = () => {
+    // Include selected variant in cart item
+    const cartItem = selectedVariant 
+      ? { ...product, selectedVariant: selectedVariant }
+      : product;
+    
     for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+      addToCart(cartItem);
     }
-    toast.success(`Added ${quantity} item(s) to cart`);
+    const variantText = selectedVariant ? ` (${selectedVariant.name})` : '';
+    toast.success(`Added ${quantity} ${product.name}${variantText} to cart`);
   };
 
   const incrementQty = () => setQuantity(q => q + 1);
