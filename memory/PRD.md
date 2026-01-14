@@ -14,12 +14,13 @@ E-commerce website for XplicitkreationZ that pivoted from a THCA flower store to
 
 ### ✅ Implemented
 - **Product Catalog** - Multi-category product listing with:
-  - Consumables (hemp flower) with **strain sub-filters** (Hybrid, Sativa, Indica)
+  - Consumables (hemp flower) with **product type sub-filters** (Flower, Pre-Rolls) and **strain sub-filters** (Hybrid, Sativa, Indica)
   - Accessories (rolling papers, wraps, cones, grinders)
   - Glass (pipes, bongs, bowls)
   - Nitrous (whip cream chargers, N2O tanks)
   - **Category Filter Tabs** - Quick filtering by product category with counts
-  - **Strain Sub-Filters** - Appears when Consumables selected (Hybrid/Sativa/Indica)
+  - **Product Type Sub-Filters** - Appears when Consumables selected (Flower/Pre-Rolls)
+  - **Strain Sub-Filters** - Shows strain type (Hybrid/Sativa/Indica) with dynamic counts
   - **Search Bar** - Real-time search across product names, brands, descriptions
 - **Product Detail Pages** - Cloud Supply-style layout with:
   - Large product images
