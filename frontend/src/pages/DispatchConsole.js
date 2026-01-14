@@ -27,13 +27,14 @@ const ADMIN_PASSWORD = "xplicit2024";
 
 const STATUS_CONFIG = {
   pending: { label: "Pending", color: "bg-yellow-500", icon: Clock, textColor: "text-yellow-400" },
+  pending_dispatch: { label: "Pending", color: "bg-yellow-500", icon: Clock, textColor: "text-yellow-400" },
   confirmed: { label: "Confirmed", color: "bg-blue-500", icon: Package, textColor: "text-blue-400" },
   dispatched: { label: "Dispatched", color: "bg-purple-500", icon: Truck, textColor: "text-purple-400" },
   delivered: { label: "Delivered", color: "bg-emerald-500", icon: CheckCircle, textColor: "text-emerald-400" },
   cancelled: { label: "Cancelled", color: "bg-red-500", icon: XCircle, textColor: "text-red-400" },
 };
 
-const STATUS_FLOW = ["pending", "confirmed", "dispatched", "delivered"];
+const STATUS_FLOW = ["pending", "pending_dispatch", "confirmed", "dispatched", "delivered"];
 
 export default function DispatchConsole() {
   const navigate = useNavigate();
