@@ -215,7 +215,9 @@ export default function DispatchConsole() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6" data-testid="stats-cards">
-          {Object.entries(STATUS_CONFIG).map(([status, config]) => (
+          {Object.entries(STATUS_CONFIG)
+            .filter(([status]) => !['pending_dispatch'].includes(status)) // Hide duplicate statuses
+            .map(([status, config]) => (
             <Card 
               key={status} 
               className={`bg-zinc-900 border-zinc-800 cursor-pointer transition-all ${filterStatus === status ? 'ring-2 ring-emerald-500' : 'hover:border-zinc-700'}`}
