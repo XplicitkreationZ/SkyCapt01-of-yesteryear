@@ -294,9 +294,13 @@ async def seed_glass():
 
 @api_router.post("/admin/seed-n2o")
 async def seed_n2o():
+    # Delete old N2O products with wrong names
+    await db.products.delete_many({"name": {"$in": ["N2O Chargers (50-pack)", "N2O Tank (Full)"]}})
     items = [
-        {"name": "N2O Chargers (50-pack)", "price": 29.99, "category": "N2O", "brand": "Generic", "size": "50 chargers", "image_url": "https://images.unsplash.com/photo-1581090363134-1f9c63b2993b"},
-        {"name": "N2O Tank (Full)", "price": 199.00, "category": "N2O", "brand": "Generic", "size": "Tank", "image_url": "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b"}
+        {"name": "Special Blue Whip Cream Chargers (50-pack)", "price": 29.99, "category": "Nitrous", "brand": "Special Blue", "size": "50 chargers", "description": "Premium food-grade nitrous oxide chargers. European quality. Perfect for culinary use with whip cream dispensers.", "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/0rvp84cq_special-blue-whip-cream-chargers__82145.jpg"},
+        {"name": "Whip-It! N2O Cream Charger Tank (580g)", "price": 89.99, "category": "Nitrous", "brand": "Whip-It!", "size": "580g Tank", "description": "The Original Whip-It! nitrous oxide cream charger tank. Food-grade N2O for professional culinary applications.", "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/7geskeyg_516MF0pq-lL.__AC_SX300_SY300_QL70_ML2_.jpg"},
+        {"name": "Best Whip Cream Charger Tank (635g)", "price": 99.99, "category": "Nitrous", "brand": "Best Whip", "size": "635g Tank", "description": "Best Whip food-grade nitrous oxide tank. Culinary-grade, ultra-pure filtered. Made in Italy. 21+ only.", "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/hjtyvxxb_Best_Whip_Food-Grade_Nitrous_Oxide_Tank_635g_clipped_rev_1__73291.webp"},
+        {"name": "Whip Cream Chargers Blue (50-pack)", "price": 34.99, "category": "Nitrous", "brand": "Special Blue", "size": "50 chargers", "description": "Special Blue European whip cream chargers. 8g N2O cartridges for standard dispensers.", "image_url": "https://customer-assets.emergentagent.com/job_xplicit-dispatch/artifacts/dwdzd92x_OIP.webp"}
     ]
     inserted = 0
     for s in items:
