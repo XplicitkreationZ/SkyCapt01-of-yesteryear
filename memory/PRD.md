@@ -35,8 +35,16 @@ E-commerce website for XplicitkreationZ that pivoted from a THCA flower store to
   - 0-10mi: $7 fee, $25 minimum
   - 10-25mi: $12 fee, $50 minimum
   - 25-40mi: $18 fee, $75 minimum
+- **Dispatcher Console** (`/admin`) - Admin order management with:
+  - Password-protected login (password: xplicit2024)
+  - Stats dashboard (Pending, Confirmed, Dispatched, Delivered, Cancelled counts)
+  - Order search by ID, customer name, or phone
+  - Order cards showing customer info, address, items, total
+  - Status flow: Pending → Confirmed → Dispatched → Delivered
+  - Cancel order functionality
+- **Branding** - Updated header with "XplicitkreationZ" + "SMOKE SHOP DELIVERED" tagline
 - **Age Gate** - 21+ verification modal
-- **About Page** - Updated content for Xplicit Delivery business model
+- **About Page** - Content for Xplicit Delivery business model
 - **FAQ Page** - Comprehensive delivery FAQs
 - **Legal Disclaimers** - FDA disclosure, hemp compliance info
 
