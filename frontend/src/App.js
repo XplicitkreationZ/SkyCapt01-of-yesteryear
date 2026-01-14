@@ -259,7 +259,7 @@ const Catalog = ({ addToCart }) => {
           <p className="text-zinc-400 text-lg mb-2">No products found</p>
           <p className="text-zinc-500 text-sm">Try adjusting your search or filter</p>
           <Button 
-            onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
+            onClick={() => { setSearchQuery(''); setActiveCategory('all'); setActiveStrain('all'); }}
             className="mt-4 rounded-full bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
           >
             Clear filters
