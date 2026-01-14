@@ -88,7 +88,9 @@ export default function DispatchConsole() {
       // Calculate stats
       const newStats = { pending: 0, confirmed: 0, dispatched: 0, delivered: 0, cancelled: 0, total: data.orders?.length || 0 };
       (data.orders || []).forEach(order => {
-        const status = order.status || "pending";
+        let status = order.status || "pending";
+        // Normalize pending_dispatch to pending for stats
+        if (status === "pending_dispatch") status = "pending";
         if (newStats[status] !== undefined) newStats[status]++;
       });
       setStats(newStats);
