@@ -91,6 +91,7 @@ function useProducts() {
         await axios.post(`${API}/seed`);
         await axios.post(`${API}/admin/seed-accessories`);
         await axios.post(`${API}/admin/seed-glass`);
+        await axios.post(`${API}/admin/seed-n2o`);
         const { data } = await axios.get(`${API}/products`);
         setItems(data);
       } catch (e) {
@@ -101,50 +102,8 @@ function useProducts() {
   return { items, loading, error };
 }
 
-const ComingSoon = () => {
-  const [email, setEmail] = useState("");
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!email) return toast.error("Enter your email");
-    try { await axios.post(`${API}/waitlist`, { email, source: "coming-soon" }); toast.success("You're on the list!"); setEmail(""); }
-    catch { toast.error("Something went wrong"); }
-  };
-  const launchAt = process.env.REACT_APP_LAUNCH_AT || null;
-  return (
-    <section className="relative min-h-[70vh] flex items-center" data-testid="coming-soon">
-      {showBg && <AnimatedBackground />}
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <p className="text-emerald-400 uppercase tracking-widest text-sm">XplicitkreationZ</p>
-        <h1 className="text-5xl md:text-6xl font-extrabold text-white mt-2">Coming soon</h1>
-        <p className="text-zinc-300 mt-4 max-w-2xl">Local delivery of hemp products and accessories. Join the waitlist for launch updates.</p>
-        <Countdown targetISO={launchAt} />
-        <form onSubmit={submit} className="mt-6 flex gap-3 max-w-md" data-testid="waitlist-form">
-          <Input data-testid="waitlist-email-input" type="email" placeholder="Email address" value={email} onChange={(e)=>setEmail(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
-          <Button data-testid="waitlist-submit-btn" type="submit" className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Notify me</Button>
-        </form>
-      </div>
-    </section>
-  );
-};
-
-const Hero = () => (
-  <section className="relative overflow-hidden" data-testid="hero">
-    {showBg && <AnimatedBackground />}
-    <div className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-[1.2fr_.8fr] gap-10 items-center">
-      <div>
-        <h1 className="font-['Space_Grotesk'] text-5xl md:text-6xl font-extrabold leading-tight text-white" data-testid="hero-title">Xplicit Delivery</h1>
-        <p className="text-zinc-300 mt-4 max-w-xl">Austin-local hemp delivery (21+). Accessories, papers, grinders, glass — card-only, courier delivered.</p>
-        <div className="mt-6 flex gap-3">
-          <a href="#products" data-testid="shop-now-btn"><Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">Shop now</Button></a>
-          <Link to="/faq" data-testid="learn-about-btn"><Button variant="secondary" className="rounded-full border-emerald-500/40 bg-transparent text-emerald-300 hover:bg-emerald-500/10">FAQ</Button></Link>
-        </div>
-      </div>
-      <div className="justify-self-center">
-        <img alt="prerolls" className="h-72 w-72 object-cover rounded-xl ring-2 ring-emerald-500/40" src={HERO_IMAGES.preroll2}/>
-      </div>
-    </div>
-  </section>
-);
+const ComingSoon = () => { return null };
+const Hero = () => { return null };
 
 const Catalog = ({ addToCart }) => {
   const { items, loading, error } = useProducts();
@@ -178,7 +137,6 @@ const Catalog = ({ addToCart }) => {
 
 const Layout = ({ children, cartCount }) => (
   <div className="min-h-screen">
-    <div className="absolute inset-0 -z-10" style={{background:"radial-gradient(800px 300px at 20% -5%, rgba(126,44,251,.25), transparent), radial-gradient(800px 300px at 80% -5%, rgba(16,185,129,.25), transparent)"}}/>
     <Nav cartCount={cartCount} />
     <main className="pb-20">{children}</main>
     <footer className="border-t border-emerald-500/20 py-10 mt-10" data-testid="footer">
@@ -194,7 +152,7 @@ const Layout = ({ children, cartCount }) => (
   </div>
 );
 
-const Home = ({ addToCart }) => (<><Hero /><Catalog addToCart={addToCart} /></>);
+const Home = ({ addToCart }) => (<Catalog addToCart={addToCart} />);
 
 export default function App() {
   const [ageOk, setAgeOk] = useState(false);
@@ -208,8 +166,7 @@ export default function App() {
           <Layout cartCount={cart.reduce((s,i)=>s+i.qty,0)}>
             <Suspense fallback={<div className="p-6 text-zinc-300" data-testid="lazy-loading">Loading…</div>}>
               <Routes>
-                <Route path="/" element={<ComingSoon />} />
-                <Route path="/shop" element={<Home addToCart={addToCart} />} />
+                <Route path="/" element={<Home addToCart={addToCart} />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />

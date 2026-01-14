@@ -165,7 +165,7 @@ async def create_product(payload: ProductCreate):
 
 @api_router.get("/products", response_model=List[Product])
 async def list_products():
-    products = await db.products.find({}, {"_id": 0}).to_list(400)
+    products = await db.products.find({}, {"_id": 0}).to_list(800)
     for p in products:
         if isinstance(p.get('created_at'), str):
             p['created_at'] = datetime.fromisoformat(p['created_at'])
@@ -223,7 +223,7 @@ async def create_delivery_order(payload: OrderDeliveryCreate):
     if payload.address.state.upper() != 'TX':
         raise HTTPException(status_code=400, detail="Texas only")
     ids = [i.product_id for i in payload.items]
-    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(400)
+    found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(800)
     price_map = {p['id']: p['price'] for p in found}
     subtotal = 0.0
     for it in payload.items:
@@ -284,6 +284,19 @@ async def seed_glass():
         {"name": "Glass Round Base Bong 8\"", "price": 39.99, "category": "Accessory", "brand": "Glass", "size": "8\"", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/brmtuk2y_OxkdN58iVJ5DZAMfF0reW1vvj0y8bEvIUG9OJEHS_600x.jpg"},
         {"name": "10\" Color Accented Beaker Bong (Blue)", "price": 49.99, "category": "Accessory", "brand": "Glass", "size": "10\"", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/z74xljmk_10BlueColorAccentedBeakerBong_5000x.png"},
         {"name": "GRAV 14mm Male Octobowl", "price": 18.99, "category": "Accessory", "brand": "GRAV", "size": "14mm Male", "image_url": "https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/it29p4xf_grav-r-14mm-male-octobowl.jpg"},
+    ]
+    inserted = 0
+    for s in items:
+        res = await db.products.update_one({"name": s["name"]}, {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
+        if res.upserted_id:
+            inserted += 1
+    return {"ok": True, "inserted": inserted}
+
+@api_router.post("/admin/seed-n2o")
+async def seed_n2o():
+    items = [
+        {"name": "N2O Chargers (50-pack)", "price": 29.99, "category": "N2O", "brand": "Generic", "size": "50 chargers", "image_url": "https://images.unsplash.com/photo-1581090363134-1f9c63b2993b"},
+        {"name": "N2O Tank (Full)", "price": 199.00, "category": "N2O", "brand": "Generic", "size": "Tank", "image_url": "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b"}
     ]
     inserted = 0
     for s in items:
