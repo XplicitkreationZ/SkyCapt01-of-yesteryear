@@ -31,8 +31,15 @@ export default function CartPage({ cart, setCart }){
     if (!quote?.allowed) return;
     setLoading(true);
     try{
-      const items = cart.map(c=> ({ product_id: c.id, quantity: c.qty }));
-      const address = { name, phone, address1, city, state, zip, dob };
+      // Include product name and variant info for dispatcher
+      const items = cart.map(c=> ({ 
+        product_id: c.id, 
+        quantity: c.qty,
+        name: c.name,
+        price: c.price,
+        variant: c.selectedVariant?.name || null
+      }));
+      const address = { name, phone, street: address1, city, state, zip, dob };
       await axios.post(`${API}/orders/delivery`, { items, address });
       setCart([]);
       window.location.href = "/order-confirmation?ok=1";
