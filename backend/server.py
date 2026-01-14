@@ -264,6 +264,49 @@ async def update_order_status(order_id: str, payload: StatusUpdate):
         raise HTTPException(status_code=404, detail="Order not found")
     return {"ok": True}
 
+# Also support admin route for status updates
+@api_router.patch("/admin/orders/{order_id}/status")
+async def admin_update_order_status(order_id: str, payload: StatusUpdate):
+    res = await db.delivery_orders.update_one({"id": order_id}, {"$set": {"status": payload.status, "dispatcher_note": payload.dispatcher_note, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"ok": True, "order_id": order_id, "new_status": payload.status}
+
+@api_router.get("/admin/orders")
+async def get_admin_orders():
+    """Get all orders for the dispatcher console"""
+    cursor = db.delivery_orders.find({}, {"_id": 0}).sort("created_at", -1)
+    orders = await cursor.to_list(500)
+    
+    # Transform orders for frontend
+    formatted_orders = []
+    for order in orders:
+        formatted_orders.append({
+            "id": order.get("id"),
+            "status": order.get("status", "pending"),
+            "created_at": order.get("created_at"),
+            "updated_at": order.get("updated_at"),
+            "customer": {
+                "name": order.get("address", {}).get("name", "N/A"),
+                "phone": order.get("address", {}).get("phone", "N/A"),
+                "email": order.get("address", {}).get("email"),
+            },
+            "delivery": {
+                "address": order.get("address", {}).get("street", "N/A"),
+                "city": order.get("address", {}).get("city", ""),
+                "zip": order.get("address", {}).get("zip", ""),
+            },
+            "items": order.get("items", []),
+            "subtotal": order.get("subtotal", 0),
+            "delivery_fee": order.get("delivery_fee", 0),
+            "tax": order.get("tax", 0),
+            "total": order.get("total", 0),
+            "tier": order.get("tier"),
+            "dispatcher_note": order.get("dispatcher_note"),
+        })
+    
+    return {"orders": formatted_orders, "count": len(formatted_orders)}
+
 @api_router.post("/admin/seed-accessories")
 async def seed_accessories():
     items = [
