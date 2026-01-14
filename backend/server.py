@@ -326,22 +326,33 @@ async def create_indexes():
 
 @api_router.post("/seed")
 async def seed_products():
-    existing = await db.products.count_documents({"category": {"$in": ["Consumable", None]}})
-    if existing > 0:
-        return {"skipped": True, "count": existing}
+    # Update existing flower products to have Consumable category
+    await db.products.update_many(
+        {"strain_type": {"$exists": True, "$ne": None}},
+        {"$set": {"category": "Consumable"}}
+    )
+    
     samples = [
         {"name": "Blue Dream 3.5g Flower Bag", "description": "Balanced uplift with berry notes. Fresh-sealed mylar bag.", "price": 34.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1518465444133-93542d08fdd9", "coa_url": "https://example.com/coa/blue-dream.pdf"},
         {"name": "Sour Diesel 1g Gram Bag", "description": "Citrus-diesel aroma for daytime clarity. Single gram bag.", "price": 12.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Sativa", "size": "1g", "image_url": "https://images.unsplash.com/photo-1559558260-dfa522cfd57c", "coa_url": "https://example.com/coa/sour-diesel.pdf"},
+        {"name": "Pineapple Express 3.5g Flower Bag", "description": "Tropical sweetness meets energetic vibes.", "price": 32.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Hybrid", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1603909223429-69bb7101f420", "coa_url": None},
+        {"name": "Wedding Cake 1g Gram Bag", "description": "Sweet vanilla with relaxing indica effects.", "price": 14.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1616690002498-c860238ceb42", "coa_url": None},
+        {"name": "Green Crack 3.5g Flower Bag", "description": "Sharp energy and focus with tangy mango flavor.", "price": 36.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Sativa", "size": "3.5g", "image_url": "https://images.unsplash.com/photo-1587754554670-2de5cc6e35de", "coa_url": None},
+        {"name": "Granddaddy Purple 1g Gram Bag", "description": "Deep relaxation with grape and berry notes.", "price": 13.00, "category": "Consumable", "brand": "Xplicit", "strain_type": "Indica", "size": "1g", "image_url": "https://images.unsplash.com/photo-1585238342070-61e1e768b1ff", "coa_url": None},
     ]
-    docs = []
+    
+    inserted = 0
     for s in samples:
-        p = Product(**s)
-        d = p.model_dump(); d['created_at'] = d['created_at'].isoformat()
-        docs.append(d)
-    if docs:
-        await db.products.insert_many(docs)
-    count = await db.products.count_documents({})
-    return {"inserted": count}
+        res = await db.products.update_one(
+            {"name": s["name"]}, 
+            {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, 
+            upsert=True
+        )
+        if res.upserted_id:
+            inserted += 1
+    
+    count = await db.products.count_documents({"category": "Consumable"})
+    return {"inserted": inserted, "total_consumables": count}
 
 app.include_router(api_router)
 app.add_middleware(
