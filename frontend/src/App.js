@@ -114,6 +114,12 @@ const CATEGORIES = [
   { id: 'Nitrous', label: 'Nitrous', icon: '⚡' },
 ];
 
+const PRODUCT_TYPES = [
+  { id: 'all', label: 'All Types', icon: '📋' },
+  { id: 'Flower', label: 'Flower', icon: '🌸' },
+  { id: 'Pre-Roll', label: 'Pre-Rolls', icon: '🔥' },
+];
+
 const STRAIN_TYPES = [
   { id: 'all', label: 'All Strains', color: 'bg-zinc-600' },
   { id: 'Hybrid', label: 'Hybrid', color: 'bg-purple-500' },
@@ -124,17 +130,19 @@ const STRAIN_TYPES = [
 const Catalog = ({ addToCart }) => {
   const { items, loading, error } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeProductType, setActiveProductType] = useState('all');
   const [activeStrain, setActiveStrain] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredItems = items.filter(p => {
     const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
+    const matchesProductType = activeProductType === 'all' || p.product_type === activeProductType;
     const matchesStrain = activeStrain === 'all' || p.strain_type === activeStrain;
     const matchesSearch = !searchQuery || 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.brand && p.brand.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesStrain && matchesSearch;
+    return matchesCategory && matchesProductType && matchesStrain && matchesSearch;
   });
 
   const categoryCounts = items.reduce((acc, p) => {
@@ -143,17 +151,29 @@ const Catalog = ({ addToCart }) => {
     return acc;
   }, { all: items.length });
 
-  const strainCounts = items.filter(p => p.category === 'Consumable').reduce((acc, p) => {
+  const productTypeCounts = items.filter(p => p.category === 'Consumable').reduce((acc, p) => {
+    const ptype = p.product_type || 'Other';
+    acc[ptype] = (acc[ptype] || 0) + 1;
+    acc.all = (acc.all || 0) + 1;
+    return acc;
+  }, {});
+
+  const strainCounts = items.filter(p => {
+    const matchesCat = p.category === 'Consumable';
+    const matchesType = activeProductType === 'all' || p.product_type === activeProductType;
+    return matchesCat && matchesType;
+  }).reduce((acc, p) => {
     const strain = p.strain_type || 'Other';
     acc[strain] = (acc[strain] || 0) + 1;
     acc.all = (acc.all || 0) + 1;
     return acc;
   }, {});
 
-  // Reset strain filter when changing category
+  // Reset filters when changing category
   const handleCategoryChange = (catId) => {
     setActiveCategory(catId);
     if (catId !== 'Consumable') {
+      setActiveProductType('all');
       setActiveStrain('all');
     }
   };
