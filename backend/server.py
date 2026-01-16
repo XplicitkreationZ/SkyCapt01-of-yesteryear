@@ -13,7 +13,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 import math
 import json
 from urllib.request import urlopen
-from square.client import Client as SquareClient
+from square import Square
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -28,8 +28,8 @@ SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
 SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '')
 SQUARE_ENVIRONMENT = os.environ.get('SQUARE_ENVIRONMENT', 'sandbox')
 
-square_client = SquareClient(
-    access_token=SQUARE_ACCESS_TOKEN,
+square_client = Square(
+    token=SQUARE_ACCESS_TOKEN,
     environment=SQUARE_ENVIRONMENT
 )
 
