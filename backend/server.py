@@ -115,9 +115,18 @@ class OrderDelivery(BaseModel):
     total: float
     tier: Optional[str] = None
     payment_method: str = "card"
-    payment_status: str = "mock_authorized"
+    payment_status: str = "pending"
+    payment_id: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: str = "pending_dispatch"
+
+class SquarePaymentRequest(BaseModel):
+    source_id: str  # Token from Square Web Payments SDK
+    amount: int  # Amount in cents
+    currency: str = "USD"
+    order_id: str
+    customer_email: Optional[str] = None
+    customer_name: Optional[str] = None
 
 class DeliveryQuoteRequest(BaseModel):
     zip: str
