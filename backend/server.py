@@ -285,57 +285,44 @@ async def process_square_payment(payment: SquarePaymentRequest):
     # Create idempotency key
     idempotency_key = str(uuid.uuid4())
     
-    # Create payment request
-    payment_body = {
-        "source_id": payment.source_id,
-        "idempotency_key": idempotency_key,
-        "amount_money": {
-            "amount": payment.amount,
-            "currency": payment.currency
-        },
-        "location_id": SQUARE_LOCATION_ID,
-        "reference_id": payment.order_id,
-        "note": f"Order {payment.order_id[:8]} - XplicitkreationZ Delivery"
-    }
-    
-    # Add customer info if provided
-    if payment.customer_email:
-        payment_body["buyer_email_address"] = payment.customer_email
-    
     try:
-        result = square_client.payments.create_payment(body=payment_body)
+        result = square_client.payments.create(
+            source_id=payment.source_id,
+            idempotency_key=idempotency_key,
+            amount_money={
+                "amount": payment.amount,
+                "currency": payment.currency
+            },
+            location_id=SQUARE_LOCATION_ID,
+            reference_id=payment.order_id,
+            note=f"Order {payment.order_id[:8]} - XplicitkreationZ Delivery",
+            buyer_email_address=payment.customer_email if payment.customer_email else None
+        )
         
-        if result.is_success():
-            square_payment = result.body.get('payment', {})
-            payment_id = square_payment.get('id')
-            
-            # Update order with payment info
-            await db.delivery_orders.update_one(
-                {"id": payment.order_id},
-                {"$set": {
-                    "payment_status": "completed",
-                    "payment_id": payment_id,
-                    "payment_method": "square",
-                    "status": "confirmed",
-                    "paid_at": datetime.now(timezone.utc).isoformat()
-                }}
-            )
-            
-            return {
-                "success": True,
+        payment_id = result.payment.id if result.payment else None
+        
+        # Update order with payment info
+        await db.delivery_orders.update_one(
+            {"id": payment.order_id},
+            {"$set": {
+                "payment_status": "completed",
                 "payment_id": payment_id,
-                "order_id": payment.order_id,
-                "status": "completed"
-            }
-        else:
-            errors = result.errors
-            error_msg = errors[0].get('detail', 'Payment failed') if errors else 'Payment failed'
-            logger.error(f"Square payment error: {errors}")
-            raise HTTPException(status_code=400, detail=error_msg)
+                "payment_method": "square",
+                "status": "confirmed",
+                "paid_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "success": True,
+            "payment_id": payment_id,
+            "order_id": payment.order_id,
+            "status": "completed"
+        }
             
     except Exception as e:
         logger.error(f"Square payment exception: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Payment processing error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Payment failed: {str(e)}")
 
 class StatusUpdate(BaseModel):
     status: str
