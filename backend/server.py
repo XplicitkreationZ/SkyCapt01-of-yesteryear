@@ -14,6 +14,7 @@ import math
 import json
 from urllib.request import urlopen
 from square import Square
+from square.environment import SquareEnvironment
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -26,11 +27,11 @@ db = client[os.environ['DB_NAME']]
 SQUARE_APP_ID = os.environ.get('SQUARE_APP_ID', '')
 SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
 SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '')
-SQUARE_ENVIRONMENT = os.environ.get('SQUARE_ENVIRONMENT', 'sandbox')
+SQUARE_ENV = os.environ.get('SQUARE_ENVIRONMENT', 'sandbox')
 
 square_client = Square(
     token=SQUARE_ACCESS_TOKEN,
-    environment=SQUARE_ENVIRONMENT
+    environment=SquareEnvironment.SANDBOX if SQUARE_ENV == 'sandbox' else SquareEnvironment.PRODUCTION
 )
 
 app = FastAPI()
