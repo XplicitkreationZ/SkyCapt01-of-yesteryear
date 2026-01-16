@@ -13,6 +13,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 import math
 import json
 from urllib.request import urlopen
+from square.client import Client as SquareClient
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,6 +21,17 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Square configuration
+SQUARE_APP_ID = os.environ.get('SQUARE_APP_ID', '')
+SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
+SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '')
+SQUARE_ENVIRONMENT = os.environ.get('SQUARE_ENVIRONMENT', 'sandbox')
+
+square_client = SquareClient(
+    access_token=SQUARE_ACCESS_TOKEN,
+    environment=SQUARE_ENVIRONMENT
+)
 
 app = FastAPI()
 app.add_middleware(GZipMiddleware, minimum_size=500)
