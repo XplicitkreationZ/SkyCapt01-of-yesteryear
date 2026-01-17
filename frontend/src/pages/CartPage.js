@@ -50,7 +50,7 @@ export default function CartPage({ cart, setCart }){
         price: c.price,
         variant: c.selectedVariant?.name || null
       }));
-      const address = { name, phone, street: address1, city, state, zip, dob, email };
+      const address = { name, phone, address1: address1, city, state, zip, dob, email };
       const { data } = await axios.post(`${API}/orders/delivery`, { items, address });
       setOrderId(data.order_id);
       setOrderTotal(data.total);
