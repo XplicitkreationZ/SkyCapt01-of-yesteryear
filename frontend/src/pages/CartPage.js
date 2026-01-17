@@ -58,7 +58,9 @@ export default function CartPage({ cart, setCart }){
       toast.success("Order created! Please complete payment.");
     }catch(e){
       console.error(e);
-      toast.error(e?.response?.data?.detail || "Failed to create order");
+      const errorMsg = e?.response?.data?.detail || e?.message || "Failed to create order";
+      toast.error(errorMsg);
+      alert(errorMsg);
     }finally{ setLoading(false); }
   };
 
@@ -82,7 +84,9 @@ export default function CartPage({ cart, setCart }){
       }
     } catch (e) {
       console.error(e);
-      toast.error(e?.response?.data?.detail || "Payment failed. Please try again.");
+      const errorMsg = e?.response?.data?.detail || e?.message || "Payment failed. Please try again.";
+      toast.error(errorMsg);
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
