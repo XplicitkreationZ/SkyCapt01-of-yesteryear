@@ -89,6 +89,7 @@ class Address(BaseModel):
     state: str
     zip: str
     dob: str
+    email: Optional[str] = None
 
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
