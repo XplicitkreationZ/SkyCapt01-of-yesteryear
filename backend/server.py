@@ -237,7 +237,7 @@ async def delivery_quote(payload: DeliveryQuoteRequest):
     reason = None if allowed else f"Minimum order ${min_order:.2f} ({name})"
     return DeliveryQuoteResponse(allowed=allowed, fee=float(fee), min_order=float(min_order), tier=name, reason=reason, distance_miles=round(dist,2))
 
-@api_router.post("/orders/delivery", response_model=OrderDelivery)
+@api_router.post("/orders/delivery")
 async def create_delivery_order(payload: OrderDeliveryCreate):
     try:
         dob = datetime.fromisoformat(payload.address.dob).date()
