@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DeliveryDisclaimer } from "@/components/DeliveryDisclaimer";
 import { PaymentForm, CreditCard } from "react-square-web-payments-sdk";
 import { toast } from "sonner";
+import { Upload, CheckCircle, AlertCircle, Camera, X } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -25,8 +26,58 @@ export default function CartPage({ cart, setCart }){
   const [orderId, setOrderId] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [orderTotal, setOrderTotal] = useState(0);
+  
+  // ID Verification states
+  const [idImage, setIdImage] = useState(null);
+  const [idPreview, setIdPreview] = useState(null);
+  const [idVerified, setIdVerified] = useState(false);
+  const [uploadingId, setUploadingId] = useState(false);
+  const fileInputRef = useRef(null);
 
   const subtotal = useMemo(()=> cart.reduce((s,i)=> s + i.price * i.qty, 0), [cart]);
+
+  const handleIdUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB");
+      return;
+    }
+
+    setUploadingId(true);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setIdPreview(reader.result);
+      setIdImage(reader.result); // Base64 encoded image
+      setIdVerified(true);
+      setUploadingId(false);
+      toast.success("ID uploaded successfully!");
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read file");
+      setUploadingId(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeId = () => {
+    setIdImage(null);
+    setIdPreview(null);
+    setIdVerified(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const getQuote = async ()=>{
     if(!zip || !subtotal) return;
@@ -41,6 +92,10 @@ export default function CartPage({ cart, setCart }){
       toast.error("Please fill in all delivery details");
       return;
     }
+    if (!idVerified || !idImage) {
+      toast.error("Please upload a valid ID for age verification");
+      return;
+    }
     setLoading(true);
     try{
       const items = cart.map(c=> ({ 
@@ -51,7 +106,11 @@ export default function CartPage({ cart, setCart }){
         variant: c.selectedVariant?.name || null
       }));
       const address = { name, phone, address1: address1, city, state, zip, dob, email };
-      const { data } = await axios.post(`${API}/orders/delivery`, { items, address });
+      const { data } = await axios.post(`${API}/orders/delivery`, { 
+        items, 
+        address,
+        id_image: idImage // Include the ID image
+      });
       setOrderId(data.order_id);
       setOrderTotal(data.total);
       setShowPayment(true);
@@ -59,8 +118,7 @@ export default function CartPage({ cart, setCart }){
     }catch(e){
       console.error(e);
       const errorMsg = e?.response?.data?.detail || e?.message || "Failed to create order";
-      toast.error(errorMsg);
-      alert(errorMsg);
+      toast.error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }finally{ setLoading(false); }
   };
 
@@ -85,8 +143,7 @@ export default function CartPage({ cart, setCart }){
     } catch (e) {
       console.error(e);
       const errorMsg = e?.response?.data?.detail || e?.message || "Payment failed. Please try again.";
-      toast.error(errorMsg);
-      alert(errorMsg);
+      toast.error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     } finally {
       setLoading(false);
     }
@@ -142,7 +199,7 @@ export default function CartPage({ cart, setCart }){
             {!showPayment ? (
               <>
                 <h3 className="text-white font-semibold text-lg">Delivery Details</h3>
-                <Input data-testid="input-name" placeholder="Full name *" value={name} onChange={e=>setName(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
+                <Input data-testid="input-name" placeholder="Full name (as on ID) *" value={name} onChange={e=>setName(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
                 <Input data-testid="input-email" placeholder="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
                 <Input data-testid="input-dob" placeholder="Date of Birth (YYYY-MM-DD) *" value={dob} onChange={e=>setDob(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
                 <Input data-testid="input-phone" placeholder="Phone *" value={phone} onChange={e=>setPhone(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
@@ -151,6 +208,75 @@ export default function CartPage({ cart, setCart }){
                   <Input data-testid="input-city" placeholder="City *" value={city} onChange={e=>setCity(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" />
                   <Input data-testid="input-state" placeholder="State" value={state} onChange={e=>setState(e.target.value)} className="bg-zinc-900 border-emerald-500/30 text-white" disabled />
                   <Input data-testid="input-zip" placeholder="ZIP *" value={zip} onChange={e=>setZip(e.target.value)} onBlur={getQuote} className="bg-zinc-900 border-emerald-500/30 text-white" />
+                </div>
+                
+                {/* ID Verification Section */}
+                <div className="p-4 rounded-lg bg-zinc-900/70 border border-amber-500/30 space-y-3" data-testid="id-verification-section">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-amber-400" />
+                    <h4 className="text-amber-400 font-semibold">21+ Age Verification Required</h4>
+                  </div>
+                  <p className="text-zinc-400 text-sm">
+                    Upload a photo of your valid government-issued ID (driver's license, state ID, or passport). 
+                    Your ID will be verified at delivery.
+                  </p>
+                  
+                  {!idPreview ? (
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-emerald-500/40 rounded-lg p-6 text-center cursor-pointer hover:border-emerald-400/60 hover:bg-emerald-500/5 transition-all"
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleIdUpload}
+                        className="hidden"
+                        data-testid="id-file-input"
+                      />
+                      {uploadingId ? (
+                        <div className="text-emerald-400">
+                          <div className="animate-spin w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full mx-auto mb-2"></div>
+                          <p>Processing...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-center gap-4 mb-3">
+                            <Upload className="w-8 h-8 text-emerald-400" />
+                            <Camera className="w-8 h-8 text-emerald-400" />
+                          </div>
+                          <p className="text-emerald-400 font-medium">Tap to upload or take photo of ID</p>
+                          <p className="text-zinc-500 text-xs mt-1">Accepted: JPG, PNG, HEIC (max 10MB)</p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="rounded-lg overflow-hidden border border-emerald-500/40">
+                        <img 
+                          src={idPreview} 
+                          alt="ID Preview" 
+                          className="w-full h-40 object-cover"
+                          data-testid="id-preview"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-2 text-emerald-400">
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="text-sm font-medium">ID Uploaded</span>
+                        </div>
+                        <Button 
+                          onClick={removeId}
+                          variant="ghost" 
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-sm"
+                          data-testid="remove-id-btn"
+                        >
+                          <X className="w-4 h-4 mr-1" /> Remove
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {quote && (
@@ -171,16 +297,20 @@ export default function CartPage({ cart, setCart }){
                   </Button>
                   <Button 
                     data-testid="btn-proceed-payment" 
-                    disabled={!quote?.allowed || loading} 
+                    disabled={!quote?.allowed || loading || !idVerified} 
                     onClick={createOrder} 
-                    className="flex-1 rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold"
+                    className={`flex-1 rounded-full font-semibold ${
+                      idVerified 
+                        ? 'bg-emerald-500 text-black hover:bg-emerald-400' 
+                        : 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
+                    }`}
                   >
-                    {loading ? "Processing..." : `Proceed to Payment — $${total.toFixed(2)}`}
+                    {loading ? "Processing..." : !idVerified ? "Upload ID to Continue" : `Proceed to Payment — $${total.toFixed(2)}`}
                   </Button>
                 </div>
                 
                 <p className="text-zinc-500 text-xs text-center">
-                  Texas delivery only • 21+ with valid ID required at delivery
+                  Texas delivery only • 21+ with valid ID required at delivery • ID will be verified by courier
                 </p>
               </>
             ) : (
@@ -192,6 +322,10 @@ export default function CartPage({ cart, setCart }){
                     <span className="text-xl font-bold text-emerald-400">${orderTotal.toFixed(2)}</span>
                   </div>
                   <p className="text-zinc-400 text-sm">Order ID: {orderId?.slice(0, 8)}...</p>
+                  <div className="flex items-center gap-2 mt-2 text-emerald-400 text-sm">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>ID Verified</span>
+                  </div>
                 </div>
                 
                 <div className="bg-zinc-900 p-4 rounded-lg border border-emerald-500/20" data-testid="square-payment-form">
@@ -232,7 +366,6 @@ export default function CartPage({ cart, setCart }){
                 
                 <div className="text-center text-zinc-500 text-xs space-y-1">
                   <p>🔒 Secure payment powered by Square</p>
-                  <p>Test card: 4532 0151 1283 0366</p>
                 </div>
               </>
             )}
