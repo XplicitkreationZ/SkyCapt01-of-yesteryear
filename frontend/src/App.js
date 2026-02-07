@@ -20,7 +20,7 @@ const FAQ = lazy(() => import("@/pages/FAQ"));
 const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
 const DispatchConsole = lazy(() => import("@/pages/DispatchConsole"));
-const isProd = typeof window !== 'undefined' && /xplicitkreationz\.com$/.test(window.location.hostname);
+const isProd = typeof window !== 'undefined' && /xplicitkreationz\.xyz$/.test(window.location.hostname);
 const showBg = !isProd;
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
