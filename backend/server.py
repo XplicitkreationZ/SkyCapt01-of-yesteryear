@@ -251,6 +251,11 @@ async def create_delivery_order(payload: OrderDeliveryCreate):
         raise HTTPException(status_code=400, detail="Must be 21+")
     if payload.address.state.upper() != 'TX':
         raise HTTPException(status_code=400, detail="Texas only")
+    
+    # Validate ID image is provided
+    if not payload.id_image:
+        raise HTTPException(status_code=400, detail="ID image is required for age verification")
+    
     ids = [i.product_id for i in payload.items]
     found = await db.products.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "price": 1}).to_list(800)
     price_map = {p['id']: p['price'] for p in found}
@@ -273,6 +278,7 @@ async def create_delivery_order(payload: OrderDeliveryCreate):
         tax=tax,
         total=total,
         tier=q.tier,
+        id_image=payload.id_image,  # Store the ID image
     )
     doc = order.model_dump(); doc['created_at'] = doc['created_at'].isoformat()
     await db.delivery_orders.insert_one(doc)
