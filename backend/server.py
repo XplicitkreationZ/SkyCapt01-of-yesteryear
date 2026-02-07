@@ -371,10 +371,12 @@ async def get_admin_orders():
                 "name": order.get("address", {}).get("name", "N/A"),
                 "phone": order.get("address", {}).get("phone", "N/A"),
                 "email": order.get("address", {}).get("email"),
+                "dob": order.get("address", {}).get("dob"),
             },
             "delivery": {
-                "address": order.get("address", {}).get("street", "N/A"),
+                "address": order.get("address", {}).get("address1", "N/A"),
                 "city": order.get("address", {}).get("city", ""),
+                "state": order.get("address", {}).get("state", "TX"),
                 "zip": order.get("address", {}).get("zip", ""),
             },
             "items": order.get("items", []),
@@ -384,6 +386,8 @@ async def get_admin_orders():
             "total": order.get("total", 0),
             "tier": order.get("tier"),
             "dispatcher_note": order.get("dispatcher_note"),
+            "id_image": order.get("id_image"),  # Include the ID image for verification
+            "payment_status": order.get("payment_status", "pending"),
         })
     
     return {"orders": formatted_orders, "count": len(formatted_orders)}
