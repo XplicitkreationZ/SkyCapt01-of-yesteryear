@@ -414,9 +414,43 @@ const Layout = ({ children, cartCount }) => (
 
 const Home = ({ addToCart }) => (<Catalog addToCart={addToCart} />);
 
+// Cart persistence helper functions
+const CART_STORAGE_KEY = 'xplicit_cart';
+
+const loadCartFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Validate that it's an array
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load cart from storage:', e);
+  }
+  return [];
+};
+
+const saveCartToStorage = (cart) => {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  } catch (e) {
+    console.warn('Failed to save cart to storage:', e);
+  }
+};
+
 export default function App() {
   const [ageOk, setAgeOk] = useState(false);
-  const [cart, setCart] = useState([]);
+  // Initialize cart from localStorage
+  const [cart, setCart] = useState(() => loadCartFromStorage());
+  
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    saveCartToStorage(cart);
+  }, [cart]);
+  
   const addToCart = (p)=>{ setCart(prev=>{ const ex=prev.find(i=>i.id===p.id && i.selectedVariant?.name===p.selectedVariant?.name); if(ex) return prev.map(i=>(i.id===p.id && i.selectedVariant?.name===p.selectedVariant?.name)?{...i,qty:i.qty+1}:i); return [...prev,{...p,qty:1}];}); toast.success("Added to cart"); };
   
   // Check if on admin route
