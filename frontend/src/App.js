@@ -46,7 +46,7 @@ const Nav = ({ cartCount }) => {
             <img alt="XplicitkreationZ logo" src="https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/gj0h0vr4_XplicitkreationZ_20250626_162911_0000.png" className="h-8 w-8 sm:h-10 sm:w-10 rounded-full ring-2 ring-emerald-500"/>
             <div className="flex flex-col">
               <span className="font-bold tracking-wide text-emerald-400 text-sm sm:text-lg leading-tight">XplicitkreationZ</span>
-              <span className="text-[8px] sm:text-[10px] text-zinc-400 tracking-widest uppercase hidden xs:block">Smoke Shop Delivered</span>
+              <span className="text-[8px] sm:text-[10px] text-zinc-400 tracking-widest uppercase">Smoke Shop Delivered</span>
             </div>
           </Link>
           
