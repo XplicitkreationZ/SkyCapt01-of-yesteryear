@@ -290,16 +290,24 @@ export default function DispatchConsole() {
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       {/* Order Info */}
                       <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color} text-white flex items-center gap-1`}>
                             <StatusIcon className="w-3 h-3" />
                             {statusConfig.label}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                            order.payment_status === 'paid' 
+                              ? 'bg-emerald-500/20 text-emerald-400' 
+                              : 'bg-amber-500/20 text-amber-400'
+                          }`}>
+                            <CreditCard className="w-3 h-3" />
+                            {order.payment_status === 'paid' ? 'Paid' : 'Pending Payment'}
                           </span>
                           <span className="text-zinc-400 text-sm">Order #{order.id?.slice(0, 8)}</span>
                           <span className="text-zinc-500 text-xs">{new Date(order.created_at).toLocaleString()}</span>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
                           {/* Customer */}
                           <div className="flex items-start gap-2">
                             <User className="w-4 h-4 text-zinc-500 mt-0.5" />
@@ -308,6 +316,11 @@ export default function DispatchConsole() {
                               <p className="text-zinc-400 text-xs flex items-center gap-1">
                                 <Phone className="w-3 h-3" /> {order.customer?.phone || "N/A"}
                               </p>
+                              {order.customer?.dob && (
+                                <p className="text-zinc-500 text-xs flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" /> DOB: {order.customer.dob}
+                                </p>
+                              )}
                             </div>
                           </div>
                           
@@ -316,7 +329,10 @@ export default function DispatchConsole() {
                             <MapPin className="w-4 h-4 text-zinc-500 mt-0.5" />
                             <div>
                               <p className="text-white text-sm">{order.delivery?.address || "N/A"}</p>
-                              <p className="text-zinc-400 text-xs">{order.delivery?.zip || ""}</p>
+                              <p className="text-zinc-400 text-xs">
+                                {order.delivery?.city && `${order.delivery.city}, `}
+                                {order.delivery?.state || "TX"} {order.delivery?.zip || ""}
+                              </p>
                             </div>
                           </div>
                           
@@ -326,6 +342,59 @@ export default function DispatchConsole() {
                             <div>
                               <p className="text-emerald-400 text-sm font-semibold">${order.total?.toFixed(2) || "0.00"}</p>
                               <p className="text-zinc-400 text-xs">{order.items?.length || 0} items</p>
+                            </div>
+                          </div>
+                          
+                          {/* ID Verification */}
+                          <div className="flex items-start gap-2">
+                            <IdCard className="w-4 h-4 text-zinc-500 mt-0.5" />
+                            <div>
+                              {order.id_image ? (
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 text-xs h-7"
+                                      data-testid={`view-id-${order.id}`}
+                                    >
+                                      <Eye className="w-3 h-3 mr-1" />
+                                      View ID
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl bg-zinc-950 border-emerald-500/30">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-white flex items-center gap-2">
+                                        <IdCard className="w-5 h-5 text-emerald-400" />
+                                        Customer ID - {order.customer?.name}
+                                      </DialogTitle>
+                                    </DialogHeader>
+                                    <div className="mt-4">
+                                      <div className="bg-zinc-900 rounded-lg p-2 border border-zinc-800">
+                                        <img 
+                                          src={order.id_image} 
+                                          alt="Customer ID" 
+                                          className="w-full h-auto max-h-96 object-contain rounded"
+                                        />
+                                      </div>
+                                      <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                                        <p className="text-amber-400 text-sm font-medium flex items-center gap-2">
+                                          <CheckCircle className="w-4 h-4" />
+                                          Manual Verification Required
+                                        </p>
+                                        <p className="text-zinc-400 text-xs mt-1">
+                                          Verify that the name and DOB on the ID match: <strong className="text-white">{order.customer?.name}</strong> - DOB: <strong className="text-white">{order.customer?.dob || 'N/A'}</strong>
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              ) : (
+                                <span className="text-red-400 text-xs flex items-center gap-1">
+                                  <XCircle className="w-3 h-3" />
+                                  No ID uploaded
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
