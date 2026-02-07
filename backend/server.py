@@ -105,6 +105,7 @@ class Order(BaseModel):
 class OrderDeliveryCreate(BaseModel):
     items: List[CartItem]
     address: Address
+    id_image: Optional[str] = None  # Base64 encoded ID image
 
 class OrderDelivery(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -119,6 +120,7 @@ class OrderDelivery(BaseModel):
     payment_method: str = "card"
     payment_status: str = "pending"
     payment_id: Optional[str] = None
+    id_image: Optional[str] = None  # Base64 encoded ID image for verification
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: str = "pending_dispatch"
 
