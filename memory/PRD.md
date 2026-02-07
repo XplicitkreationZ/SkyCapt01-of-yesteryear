@@ -94,4 +94,4 @@ E-commerce website for XplicitkreationZ that pivoted from a THCA flower store to
 
 ---
 **Last Updated:** December 2025
-**Domain:** xplicitkreationz.com
+**Domain:** xplicitkreationz.xyz
