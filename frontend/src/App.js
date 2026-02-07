@@ -34,40 +34,90 @@ const DisclaimerText = () => (
   </div>
 );
 
-const Nav = ({ cartCount }) => (
-  <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/65 border-b border-emerald-500/30" data-testid="navbar">
-    <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <Link to="/" className="flex items-center gap-3" data-testid="navbar-logo">
-        <img alt="XplicitkreationZ logo" src="https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/gj0h0vr4_XplicitkreationZ_20250626_162911_0000.png" className="h-10 w-10 rounded-full ring-2 ring-emerald-500"/>
-        <div className="flex flex-col">
-          <span className="font-bold tracking-wide text-emerald-400 text-lg leading-tight">XplicitkreationZ</span>
-          <span className="text-[10px] text-zinc-400 tracking-widest uppercase">Smoke Shop Delivered</span>
+const Nav = ({ cartCount }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  return (
+    <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/65 border-b border-emerald-500/30" data-testid="navbar">
+      <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0" data-testid="navbar-logo">
+            <img alt="XplicitkreationZ logo" src="https://customer-assets.emergentagent.com/job_838e7894-9ca5-4fdc-9a53-648137f2413a/artifacts/gj0h0vr4_XplicitkreationZ_20250626_162911_0000.png" className="h-8 w-8 sm:h-10 sm:w-10 rounded-full ring-2 ring-emerald-500"/>
+            <div className="flex flex-col">
+              <span className="font-bold tracking-wide text-emerald-400 text-sm sm:text-lg leading-tight">XplicitkreationZ</span>
+              <span className="text-[8px] sm:text-[10px] text-zinc-400 tracking-widest uppercase hidden xs:block">Smoke Shop Delivered</span>
+            </div>
+          </Link>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex gap-4 items-center">
+            <Link to="/shop" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-shop">Shop</Link>
+            <Link to="/faq" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-faq">FAQ</Link>
+            <Link to="/about" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-about">About</Link>
+            <Link to="/cart" className="relative" data-testid="navbar-cart">
+              <Button variant="secondary" className="rounded-full bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30">Cart
+                <span className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-black text-xs" data-testid="cart-count">{cartCount}</span>
+              </Button>
+            </Link>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button data-testid="navbar-legal" variant="secondary" className="rounded-full bg-transparent border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10">Legal</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl bg-zinc-950 border-emerald-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Legal Disclaimer</DialogTitle>
+                </DialogHeader>
+                <DisclaimerText />
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link to="/cart" className="relative" data-testid="navbar-cart-mobile">
+              <Button variant="secondary" size="sm" className="rounded-full bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 px-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-black text-xs">{cartCount}</span>
+              </Button>
+            </Link>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-emerald-400 hover:bg-emerald-500/10 rounded-lg"
+              data-testid="mobile-menu-btn"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              )}
+            </button>
+          </div>
         </div>
-      </Link>
-      <div className="flex gap-4 items-center">
-        <Link to="/shop" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-shop">Shop</Link>
-        <Link to="/faq" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-faq">FAQ</Link>
-        <Link to="/about" className="text-sm text-zinc-200 hover:text-emerald-400" data-testid="navbar-about">About</Link>
-        <Link to="/cart" className="relative" data-testid="navbar-cart">
-          <Button variant="secondary" className="rounded-full bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30">Cart
-            <span className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-black text-xs" data-testid="cart-count">{cartCount}</span>
-          </Button>
-        </Link>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button data-testid="navbar-legal" variant="secondary" className="rounded-full bg-transparent border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10">Legal</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl bg-zinc-950 border-emerald-500/30">
-            <DialogHeader>
-              <DialogTitle className="text-white">Legal Disclaimer</DialogTitle>
-            </DialogHeader>
-            <DisclaimerText />
-          </DialogContent>
-        </Dialog>
+        
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-3 pt-3 border-t border-emerald-500/20 space-y-2" data-testid="mobile-menu">
+            <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 text-zinc-200 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg">Shop</Link>
+            <Link to="/faq" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 text-zinc-200 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg">FAQ</Link>
+            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 text-zinc-200 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg">About</Link>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="w-full text-left py-2 px-3 text-zinc-200 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg">Legal</button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl bg-zinc-950 border-emerald-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Legal Disclaimer</DialogTitle>
+                </DialogHeader>
+                <DisclaimerText />
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
-    </div>
-  </nav>
-);
+    </nav>
+  );
+};
 
 const AgeGate = ({ onPass }) => {
   const [checked, setChecked] = useState(false);
