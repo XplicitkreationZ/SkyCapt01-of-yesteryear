@@ -492,17 +492,44 @@ async def seed_products():
 
 @api_router.post("/admin/seed-kratom")
 async def seed_kratom():
+    # Delete old placeholder kratom products
+    await db.products.delete_many({"category": "Kratom", "brand": "Premium"})
+    
     items = [
-        {"name": "Kratom Green Maeng Da Pack", "price": 35.00, "category": "Kratom", "brand": "Premium", "size": "Pack", "description": "Premium Green Maeng Da kratom. Known for balanced energy and focus.", "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"},
-        {"name": "Kratom Red Bali Pack", "price": 35.00, "category": "Kratom", "brand": "Premium", "size": "Pack", "description": "Premium Red Bali kratom. Popular for relaxation and comfort.", "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"},
-        {"name": "Kratom White Borneo Pack", "price": 35.00, "category": "Kratom", "brand": "Premium", "size": "Pack", "description": "Premium White Borneo kratom. Known for clean energy and mood enhancement.", "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"},
+        {
+            "name": "1836 Kratom Green Means Go (20 Capsules)", 
+            "price": 24.99, 
+            "category": "Kratom", 
+            "brand": "1836 Kratom", 
+            "size": "20 Jumbo Capsules (20g)", 
+            "description": "A Supercharged Green! Premium Green Maeng Da kratom capsules. Always lab tested. American Kratom Association GMP Qualified Vendor.", 
+            "image_url": "https://customer-assets.emergentagent.com/job_36994e87-7a86-415f-90d9-dbac3570dd5a/artifacts/yu6loa5q_1836-Kratom-Green-Means-Go-Kratom-Jumbo-Capsules-20-capsules__61111.jpg"
+        },
+        {
+            "name": "1836 Kratom Aristotle's Logic (20 Capsules)", 
+            "price": 26.99, 
+            "category": "Kratom", 
+            "brand": "1836 Kratom", 
+            "size": "20 Jumbo Capsules (20g)", 
+            "description": "Bright White Kratom with Lion's Mane & Chaga Mushrooms, Cinnamon & Nutmeg. A unique nootropic blend for focus and clarity. Always lab tested. AKA GMP Qualified.", 
+            "image_url": "https://customer-assets.emergentagent.com/job_36994e87-7a86-415f-90d9-dbac3570dd5a/artifacts/ltx96j2z_1836-Kratom-Blend-Bright-White-Aristotles-Logic-Kratom-Capsules-20-capsules__74970.jpg"
+        },
+        {
+            "name": "1836 Kratom Texas Red (1oz Powder)", 
+            "price": 19.99, 
+            "category": "Kratom", 
+            "brand": "1836 Kratom", 
+            "size": "1oz Powdered (28g)", 
+            "description": "Premium Red Vein kratom powder. After a long day in the saddle... Fitness. Wellness. Gratitude. Always lab tested. American Kratom Association GMP Qualified Vendor.", 
+            "image_url": "https://customer-assets.emergentagent.com/job_36994e87-7a86-415f-90d9-dbac3570dd5a/artifacts/lv7zquk4_1836texasred1oz-scaled.jpg"
+        },
     ]
     inserted = 0
     for s in items:
         res = await db.products.update_one({"name": s["name"]}, {"$set": s, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
         if res.upserted_id:
             inserted += 1
-    return {"ok": True, "inserted": inserted}
+    return {"ok": True, "inserted": inserted, "total_kratom": len(items)}
 
 @api_router.post("/admin/seed-prerolls")
 async def seed_prerolls():
