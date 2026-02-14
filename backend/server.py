@@ -556,7 +556,7 @@ async def seed_prerolls():
         {
             "name": "Flying Monkey THC-A Diamond Infused Pre-Rolls (4g)", 
             "description": "42% THC-A indoor flower. 2x2 gram diamond infused pre-rolls. Choose your strain below.", 
-            "price": 18.95, 
+            "price": 20.00, 
             "category": "Consumable", 
             "product_type": "Pre-Roll",
             "brand": "Flying Monkey", 
